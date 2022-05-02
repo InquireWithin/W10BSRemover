@@ -68,9 +68,9 @@ If /I "%INPUT%" == "2" goto two
 If /I "%INPUT%" == "3" goto three
 If /I "%INPUT%" == "4" goto four
 if /I "%INPUT%" == "5" goto five
+EXIT /B 0
 )
 
-EXIT /B 0
 ::do these reg changes with reg export file.reg 
 ::then run that file	
 ::TODO: Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection set both AllowTelemetry and MaxTelemetryAllowed to 0.
@@ -80,8 +80,9 @@ EXIT /B 0
 ::TODO: Computer\HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Cortana toggle to 0
 ::TODO: Computer\HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\CloudStore check
 ::Analyze C:\Windows\DiagTrack\ It reveals some more services and possible reg keys to block within its files
-::TODO: Add differnet 'tiers' of the preconfiguration based on how many features and services it removes\
+::TODO: Add different 'tiers' of the preconfiguration based on how many features and services it removes\
 ::https://serverfault.com/questions/653814/windows-firewall-netsh-block-all-ips-from-a-text-file
+::Also make a reversal script
 goto one
 :one
 ::Flush current hosts file and start
@@ -93,7 +94,7 @@ sc delete UsoSvc
 ::Remove biometrics service
 sc delete WbioSrvc
 ::Try to delete WaaSMedicSvc at some point, its protected by windows "super super user"
-::Yes, even time zones are spyware and bloat
+::The timezone autoupdate service relies on constant pinging of remote servers and geolocation. Manually set it in settings.
 sc delete tzautoupdate
 ::geolocation service
 sc delete lfsvc
@@ -101,7 +102,7 @@ sc delete lfsvc
 sc delete svsvc
 :bloat. if you're running this script you're not running windows insider, and if you are (for some ungodly reason) remove this line
 sc delete wisvc
-::the fact that theyve implemented spyware and massive bloat into a literal search bar is beyond me.
+::the fact that theyve implemented spyware and massive bloat (cortana) into a literal search bar is beyond me.
 ::Don't worry though, the taskbar looks far better without it, and it can still be accessed via super + s
 sc delete WSearch
 
@@ -111,18 +112,25 @@ sc delete WSearch
 
 
 
-::Servers identified in early w10 builds as telemetry-oriented. I feel that most arent active today, but they stay regardless
-::Implement cmd_server_list.txt here
-curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/cmd_server_list.txt > cmd_server_list.txt
-call cmd_server_list.txt
+::Servers identified in early w10 builds as telemetry-oriented. I feel that most arent active today, but they stay filtered regardless
+if not exist cmd_server_list.bat (curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/cmd_server_list.bat > cmd_server_list.bat)
+call cmd_server_list.bat
+
 REM More servers found to be ms telemetry (~467) posted on my github. I originally found these in a reddit comment ages ago. I just formatted them and gave them the prefix "0.0.0.0 "
+if not exist ms_telemetry_list.txt (
 curl https://github.com/InquireWithin/W10BSRemover/blob/main/ms_telemetry_list.txt >> %SystemRoot%\System32\drivers\etc\hosts
+)
+else(echo ms_telemetry_list.txt >> %SystemRoot%\System32\drivers\etc\hosts)
 
 ::Cortana removal mechanism here might cause breaks, comment if problems arise in the forked script
-curl https://raw.githubusercontent.com/InquireWithin/Win.10-SpyWare-Bloat-Telemetry-Remove-Fork/master/RemoveW10Bloat.bat.txt > remw10bloat.bat	
-call remw10bloat.bat
+if not exist RemoveW10Bloat.bat (
+curl https://raw.githubusercontent.com/InquireWithin/Win.10-SpyWare-Bloat-Telemetry-Remove-Fork/master/RemoveW10Bloat.bat > RemoveW10Bloat.bat
+)
+call RemoveW10Bloat.bat
 :: Implement my forked version of w10debloater here
-curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/Windows10Debloater.ps1 >> Windows10Debloater.ps1
+if not exist Windows10Debloater.ps1 (
+curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/Windows10Debloater.ps1 > Windows10Debloater.ps1
+)
 powershell Start-Process PowerShell.exe -ArgumentList ("-NoProfile -ExecutionPolicy Bypass -File 'Windows10Debloater.ps1'" -f $PSCommandPath) -Verb RunAs
 ipconfig /flushdns
 exit /b 0
