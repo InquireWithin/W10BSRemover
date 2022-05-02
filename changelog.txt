@@ -1,0 +1,31 @@
+Changes prior to 4/30 are undocumented
+
+Working on (as of 2/5/22)
+more 'stable' execution
+Service digging
+reg key digging
+sch tasks digging
+reversal script
+non-cluttered "documentation"
+a better and more concise readme and changelog
+any exception handling whatsoever
+remove more conflicting lines of code in 3rd party scripts
+
+2/5/22 ["2.01"-UNSTABLE]
+removed a line of code causing an instant crash
+added a mediocre changelog
+changed file extension of cmd_server_list.txt to .bat
+changed file extensions of required forked repo files to bat or ps1 
+adjusted curl statements for above changes
+local file support. Network conenction is no longer a requirement if the files are downloaded in advance.
+removed inconsistency ing file naming schema
+
+1/5/22 ["2.0-UNSTABLE"](changes made here are mainly unstable and mostly untested as my vm setup is down due to formatting of the disk intentionally)
+attempted integration with forked W10Debloater
+removed cortana removal restraint from alchemy1's script (forked, untested)
+removed a few needless lines in forked repos that will perform actions already done and slow down execution.
+30/4/22
+removed user interaction CLI (better to just let the script run and allow easier integration into other scripts)
+allowed integration w/ alchemy 1 script
+removed loose lines of code and directed it to a file, now curled
+forked alchemy1's debloat script and Sycrex's W10Debloater, changes are on their respective repos.
