@@ -1,7 +1,6 @@
 :: 14/4/22 LB
 
 
-:: Most Recent Change: 30/4/22 ("v 1.4")
 ::If this file was flagged a security risk, know that this is why: https://www.bleepingcomputer.com/news/microsoft/windows-10-hosts-file-blocking-telemetry-is-now-flagged-as-a-risk/
 :: justification for not using firewall (at least not yet):
 :: Note that Windows will eventually remove the ability to use the batch interpreter to manage its firewall
@@ -9,18 +8,11 @@
 :: within the code that will interrupt or override these connection blocks.
 :: It is much preferred you use almost any other type of firewall or packet blocking/filtering solution
 ::Some say that microsoft ignores telemetry server blocking via hosts file as well.
-::TL;DR use pi hole for blocking microsoft telemetry just to be safe, but the ublock ad list in the preconfig works fine.
+::use pi hole for blocking non-microsoft telemetry (unsure if it is aware of the ms telemetry servers)
 
 ::Will probably add OEM-specific debloating and exception handling soon enough
 
 ::If this file was flagged a security risk, know that this is why: https://www.bleepingcomputer.com/news/microsoft/windows-10-hosts-file-blocking-telemetry-is-now-flagged-as-a-risk/
-
-::NOTE: This script ASSUMES your registry key:
-::HKEY_LOCAL_MACHINES\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\DataBasePath
-::is set to
-::%SystemRoot%\System32\drivers\etc
-::the file that will be edited is %SystemRoot%\System32\drivers\etc
-::by default %SystemRoot% is C:\Windows
 
 ::Make sure to check services.msc for some other problematic services (like KillerAnalyticsService for users w/ Killer network drivers)
 
@@ -43,14 +35,14 @@ set NL=^^^%NLM%%NLM%^%NLM%%NLM%
 cls
 ver
 echo Reminder, This script requires administrator to run.
-echo(
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR^
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,^
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE^
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,^
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE^
-SOFTWARE.
-)
+
+::THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+::IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+::FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+::LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+::OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+::SOFTWARE.
+
 
 ::do these reg changes with reg export file.reg 
 ::then run that file	
