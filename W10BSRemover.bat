@@ -267,34 +267,3 @@ REM src end
 ipconfig /flushdns
 exit
 
-
-
-
-
-::LEGACY INTERFACE (dunno why I even bothered w/ this but if I feel its useful again I'll revamp it to actually have practicality)
-::two
-::set /A isLocal = 1
-::goto one
-::exit /b 0
-
-::three
-::quit script
-::goto:eof
-::exit
-::exit /b 0
-
-::four
-::read from hosts
-::for /F "tokens=*" %%A in (%SystemRoot%\System32\drivers\etc\hosts) do (
-::  echo %%A
-::  )
-::goto main
-::exit /b 0
-
-::five
-::REM you can do this in powershell with Clear-Content as well.
-:: This is here as a very primitive "undo" mechanism
-
-::break>%SystemRoot%\System32\drivers\etc\hosts
-::goto main
-::exit /b 0
