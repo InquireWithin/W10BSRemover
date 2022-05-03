@@ -82,7 +82,7 @@ sc delete tzautoupdate
 sc delete lfsvc
 ::Spot Verifier. Claims to detect system corruption but if found will just cause errors. I'd rather use my "corrupt" system (by windows definitions)
 sc delete svsvc
-:bloat. if you're running this script you're not running windows insider, and if you are (for some ungodly reason) remove this line
+::bloat. if you're running this script you're not running windows insider, and if you are (for some ungodly reason) remove this line
 sc delete wisvc
 ::the fact that theyve implemented spyware and massive bloat (cortana) into a literal search bar is beyond me.
 ::Don't worry though, the taskbar looks far better without it, and it can still be accessed via super + s
