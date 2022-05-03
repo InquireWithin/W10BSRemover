@@ -1,4 +1,5 @@
-Changes prior to 4/30 are undocumented
+Changes prior to 30/4/22 are undocumented
+First created 13/4/22
 
 Working on (as of 2/5/22)
 more 'stable' execution
@@ -10,7 +11,14 @@ non-cluttered "documentation"
 a better and more concise readme and changelog
 any exception handling whatsoever
 remove more conflicting lines of code in 3rd party scripts
-
+logfile (either by default or command line argument)
+integrate cmd_server_list.bat into ms_telemetry_list.txt
+try calling the req'd files (except the telemetry list) synchronously via '&'
+add command line args for silent,verbose, logging, gutjob, autorun
+change all 'bat' files to 'cmd'
+remove alch fork
+remove "press any key to continue" after w10 debloater ps1 finishes (might be OS default)
+Microsoft\Windows\SettingSync\BackgroundUploadTask  <- remove this w/ a bit change, couldnt find original forum post where the reg file to do this is
 2/5/22 ["2.01"-UNSTABLE]
 removed a line of code causing an instant crash
 added a mediocre changelog
@@ -18,7 +26,9 @@ changed file extension of cmd_server_list.txt to .bat
 changed file extensions of required forked repo files to bat or ps1 
 adjusted curl statements for above changes
 local file support. Network conenction is no longer a requirement if the files are downloaded in advance.
-removed inconsistency ing file naming schema
+removed inconsistencies in file naming schema
+all req'd files are now in one repo
+updated README
 
 1/5/22 ["2.0-UNSTABLE"](changes made here are mainly unstable and mostly untested as my vm setup is down due to formatting of the disk intentionally)
 attempted integration with forked W10Debloater
@@ -29,3 +39,9 @@ removed user interaction CLI (better to just let the script run and allow easier
 allowed integration w/ alchemy 1 script
 removed loose lines of code and directed it to a file, now curled
 forked alchemy1's debloat script and Sycrex's W10Debloater, changes are on their respective repos.
+
+2/5/22 ("2.1"-stable)
+combined RemoveW10Bloat.bat and main script
+backup of host file before breaking
+logic changes
+a few more static ip blocks
