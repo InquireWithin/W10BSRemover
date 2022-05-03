@@ -98,7 +98,7 @@ if not exist cmd_server_list.bat (curl https://raw.githubusercontent.com/Inquire
 call cmd_server_list.bat
 
 REM More servers found to be ms telemetry (~467) posted on my github. I originally found these in a reddit comment ages ago. I just formatted them and gave them the prefix "0.0.0.0 "
-if not exist ms_telemetry_list.txt (curl https://github.com/InquireWithin/W10BSRemover/blob/main/ms_telemetry_list.txt > ms_telemetry_list.txt)
+if not exist ms_telemetry_list.txt (curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/ms_telemetry_list.txt > ms_telemetry_list.txt)
 type ms_telemetry_list.txt >> %SystemRoot%\System32\drivers\etc\hosts
 
 ::Cortana removal mechanism here might cause breaks, comment if problems arise in the forked script
