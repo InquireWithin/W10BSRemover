@@ -34,7 +34,11 @@ Restart system after execution for some changes to take effect: These changes wi
 This script was designed with the intent of being ran PRIOR to user account creation or much personalization or usage of the OS (except in the case of {5}). You can run this whenever though I advise executing it after a fresh OS install.
 
 **{1} Microsoft Domains**
-Firstly, you will be **UNABLE** to access nearly all domains with *'microsoft'* in them, and a good chunk of Microsoft Office (see {2}). You will also be hard-pressed upon attempting to sign in to Microsoft accounts except the user account (see {3}). This can be resolved quickly by either commenting/removing the line to `curl` the *ms_telemetry_list.txt* or you can do `break %SystemRoot%\System32\drivers\etc\hosts` which will essentially clear this.
+Firstly, you will be **UNABLE** to access nearly all domains with *'microsoft'* in them, and a good chunk of Microsoft Office (see {2}). You will also be hard-pressed upon attempting to sign in to Microsoft accounts except the user account (see {3}). This can be resolved quickly by either commenting/removing the line to `curl` the *ms_telemetry_list.txt* or you can do 
+
+`break>%SystemRoot%\System32\drivers\etc\hosts` 
+
+which will essentially clear this.
 
 **{2} Microsoft Office**
 Many users rely on the Microsoft office suite of tools (Word, Excel, PowerPoint, etc). While these are very handy and have helped me plenty over the years, I feel the need to also pull the plug on them, as their telemetry is essentially a requirement to their launch. I suggest you use 
