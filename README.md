@@ -28,7 +28,7 @@ Yes, it is relatively unpolished. At the end of the day, it's a script originall
 
 ## Impacts of this script on your system
 ##### NOTE: Nearly all of these can be reverted with code edits
-[IF you feel that you need some of the "bloat" (default microsoft apps, ms office, ms accounts from browser, etc)], download or clone all the files in this repo, and remove the lines of Batch/PowerShell (in Windows10Debloater.ps1 and/or the W10BSRemover.bat) that mention those specific packages or utilities.
+IF you feel that you need some of the "bloat" (default microsoft apps, ms office, ms accounts from browser, etc), download or clone all the files in this repo, and remove the lines of Batch/PowerShell (in Windows10Debloater.ps1 and/or the W10BSRemover.bat) that mention those specific packages or utilities.
 Restart system after execution for some changes to take effect: These changes will be made on next system startup regardless
 
 This script was designed with the intent of being ran PRIOR to user account creation or much personalization or usage of the OS (except in the case of {5}). You can run this whenever though I advise executing it after a fresh OS install.
