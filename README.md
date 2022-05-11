@@ -37,8 +37,8 @@ This script was designed with the intent of being ran PRIOR to user account crea
 Firstly, you will be **UNABLE** to access nearly all domains with *'microsoft'* in them, and a good chunk of Microsoft Office (see {2}). You will also be hard-pressed upon attempting to sign in to Microsoft accounts except the user account (see {3}). This can be resolved quickly by either commenting/removing the line to `curl` the *ms_telemetry_list.txt* or you can do `break %SystemRoot%\System32\drivers\etc\hosts` which will essentially clear this.
 
 **{2} Microsoft Office**
-Many users rely on the Microsoft office suite of tools (Word, Excel, PowerPoint, etc). While these are very handy and have helped me plenty over the years, I feel the need to also pull the plug on them, as their telemetry is essentially a requirement to their launch. I suggest you use <a href=
-https://www.libreoffice.org/"> LibreOffice </a> instead: This set of software nearly mirrors the functionality of Microsoft Office and makes the transition seamless. It can read and write to all Microsoft Office file extensions (docx, xlsx, ppt, etc) so there is zero downside or loss of functionality. 
+Many users rely on the Microsoft office suite of tools (Word, Excel, PowerPoint, etc). While these are very handy and have helped me plenty over the years, I feel the need to also pull the plug on them, as their telemetry is essentially a requirement to their launch. I suggest you use 
+LibreOffice (https://www.libreoffice.org/) instead: This set of software nearly mirrors the functionality of Microsoft Office and makes the transition seamless. It can read and write to all Microsoft Office file extensions (docx, xlsx, ppt, etc) so there is zero downside or loss of functionality. 
 
 **{3} Microsoft Accounts (excluding system/user account)**
 Microsoft account sign-ins will be quite daunting after running the script as is. I'm fully aware that many people require this, so I once again will present three potential solutions to this in cmd:
@@ -84,7 +84,7 @@ These two scripts ▶️ Forward ▶️ versions are >80% of the script's core. 
 If you haven't for whatever reason gone into developer settings and enabled "Allow third party ..." to invalidate 95% of the MS Store's use case, do so.
 
 **{6} Concluding Statement and Known Bugs/Inconsistencies**
-Lastly, this script is a bit "volatile". What I mean by this is that **[effects on individual systems may vary]**. I am not responsible for any system damage, data loss, or unwanted behavior. However, I should state that these variations are very mild. To name a few I have seen: 
+Lastly, this script is a bit "volatile". What I mean by this is that **effects on individual systems may vary**. I am not responsible for any system damage, data loss, or unwanted behavior. However, I should state that these variations are very mild. To name a few I have seen: 
 
 Search bar retaining functionality on some systems, while being entirely inacessible for others (latter is the intended goal)
 
