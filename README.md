@@ -51,17 +51,16 @@ Microsoft account sign-ins will be quite daunting after running the script as is
 
 Fixes in all cases
 
-`break %SystemRoot%\System32\Drivers\etc\hosts && ipconfig /flushdns`
+`break>%SystemRoot%\System32\Drivers\etc\hosts && ipconfig /flushdns`
 
 <2> 
 
-This assumes you have already ran the script
-
+This assumes you have already ran the script. Make sure it's on one line
 `findstr /v /c:"microsoft" /c:"office" /c:"live" %SystemRoot%\System32\drivers\etc\hosts > %SystemRoot%\System32\drivers\etc\hosts`
 
 <3>
 
-This assumes you have NOT ran the script and downloaded everything locally, replace Path\To\File with the location of ms_telemetry_list.txt
+This assumes you have NOT ran the script and downloaded everything locally, replace Path\To\File with the location of ms_telemetry_list.txt. Keep this to one line.
 
 `findstr /v /c:"microsoft" /c:"office" /c:"live" Path\To\File\ms_telemetry_list.txt > Path\To\File\ms_telemetry_list.txt`
 
