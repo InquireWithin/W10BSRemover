@@ -35,11 +35,11 @@ This script was designed with the intent of being ran PRIOR to user account crea
 
 **{1} Microsoft Domains**
 
-Firstly, you will be **UNABLE** to access nearly all domains with *'microsoft'* in them, and a good chunk of Microsoft Office (see {2}). You will also be hard-pressed upon attempting to sign in to Microsoft accounts except the user account (see {3}). This can be resolved quickly by either commenting/removing the line to `curl` the *ms_telemetry_list.txt* or you can do 
+Firstly, you will be **UNABLE** to access nearly all domains with *'microsoft'* in them, and a good chunk of Microsoft Office (see {2}). You will also be hard-pressed upon attempting to sign in to Microsoft accounts except the user account (see {3}). This can be resolved quickly by either commenting/removing the line to `curl` the *ms_telemetry_list.txt* or you can do:
 
 `break>%SystemRoot%\System32\drivers\etc\hosts` 
 
-which will essentially clear this.
+which will allow connection to microsoft domains again but also remove all the other telemetry servers, see {3} for other options.
 
 **{2} Microsoft Office**
 
@@ -59,6 +59,7 @@ Fixes in all cases
 <2> 
 
 This assumes you have already ran the script. Make sure it's on one line
+
 `findstr /v /c:"microsoft" /c:"office" /c:"live" %SystemRoot%\System32\drivers\etc\hosts > %SystemRoot%\System32\drivers\etc\hosts`
 
 <3>
@@ -85,7 +86,7 @@ Right click on the file in explorer -> Run as Administrator
 
 `powershell.exe iwr -useb https://git.io/debloat|iex`
 
-"put back reg keys"
+Restore the registry keys. You can also use its whitelist.
 
 These two scripts ▶️ Forward ▶️ versions are >80% of the script's core. This will lessen as I add my own findings and ensure they dont cause breakage.
 
