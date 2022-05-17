@@ -24,6 +24,10 @@ Microsoft\Windows\SettingSync\BackgroundUploadTask  <- remove this w/ a bit chan
 added UAC prompt if script is launched without admin (hopefully)
 added all ip's in cmd_server_list.bat to ms_telemetry_list.txt (finally)
 deleted cmd_server_list.bat
+uploaded part of reversal script to main repo (still needs to be tweaked)
+
+13/5/22? 
+Completely reformed and reworked the README.md
 
 2/5/22 ["2.01" STABLE]
 removed a line of code causing an instant crash
