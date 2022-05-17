@@ -19,7 +19,13 @@ change all 'bat' files to 'cmd'
 remove alch fork
 remove "press any key to continue" after w10 debloater ps1 finishes (might be OS default)
 Microsoft\Windows\SettingSync\BackgroundUploadTask  <- remove this w/ a bit change, couldnt find original forum post where the reg file to do this is
-2/5/22 ["2.01"-UNSTABLE]
+
+17/5/22 ["2.1" UNSTABLE]
+added UAC prompt if script is launched without admin (hopefully)
+added all ip's in cmd_server_list.bat to ms_telemetry_list.txt (finally)
+deleted cmd_server_list.bat
+
+2/5/22 ["2.01" STABLE]
 removed a line of code causing an instant crash
 added a mediocre changelog
 changed file extension of cmd_server_list.txt to .bat
