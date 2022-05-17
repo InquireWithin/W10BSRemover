@@ -20,8 +20,10 @@ remove alch fork
 remove "press any key to continue" after w10 debloater ps1 finishes (might be OS default)
 Microsoft\Windows\SettingSync\BackgroundUploadTask  <- remove this w/ a bit change, couldnt find original forum post where the reg file to do this is
 
-17/5/22 ["2.1" UNSTABLE]
-added UAC prompt if script is launched without admin (hopefully)
+17/5/22 ["2.1" SEMISTABLE]
+added UAC prompt if script is launched without admin
+added command line arguments but they dont function as intended (yet)
+added the deletion of all content delivery files (irreversible)
 added all ip's in cmd_server_list.bat to ms_telemetry_list.txt (finally)
 deleted cmd_server_list.bat
 uploaded part of reversal script to main repo (still needs to be tweaked)
