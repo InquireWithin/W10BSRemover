@@ -4,23 +4,28 @@
 ::If this file was flagged a security risk, know that this is why: https://www.bleepingcomputer.com/news/microsoft/windows-10-hosts-file-blocking-telemetry-is-now-flagged-as-a-risk/
 :: justification for not using firewall (at least not yet):
 :: Note that Windows will eventually remove the ability to use the batch interpreter to manage its firewall
-:: You should also be aware that Microsoft, as the firewall and the OS are propreitary, may have a hidden rule
+:: You should also be aware that Microsoft, as the firewall and the OS are proprietary, may have a hidden rule
 :: within the code that will interrupt or override these connection blocks.
 :: It is much preferred you use almost any other type of firewall or packet blocking/filtering solution
 ::Some say that microsoft ignores telemetry server blocking via hosts file as well.
-::use pi hole for blocking non-microsoft telemetry (unsure if it is aware of the ms telemetry servers)
+::TL;DR use pi hole for blocking microsoft telemetry just to be safe.
 
 ::Will probably add OEM-specific debloating and exception handling soon enough
 
 ::If this file was flagged a security risk, know that this is why: https://www.bleepingcomputer.com/news/microsoft/windows-10-hosts-file-blocking-telemetry-is-now-flagged-as-a-risk/
+
+::NOTE: This script ASSUMES your registry key:
+::HKEY_LOCAL_MACHINES\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\DataBasePath
+::is set to
+::%SystemRoot%\System32\drivers\etc
+::the file that will be edited is %SystemRoot%\System32\drivers\etc
+::by default %SystemRoot% is C:\Windows
 
 ::Make sure to check services.msc for some other problematic services (like KillerAnalyticsService for users w/ Killer network drivers)
 
 ::choice /y yn /n /m "heres a choice (y/n)"
 
 ::There is also a proprietary software option for this (OOSU10) that ofc I can't include b/c proprietary.
-::I need to echo out some warnings to the user or a prompt about lost features here (like onedrive, photos, etc)
-::Make a "mini-manual" README file and move this to its own repo
 ::Implement DWS (Destroy Windows 10 Spying) if possible. If not, use manually from here (https://github.com/spinda/Destroy-Windows-10-Spying) <- Forked version
 :: If I do, include the apache license alongside it (https://www.apache.org/licenses/LICENSE-2.0) as it is licensed under Apache.
 :: The original repo for DWS was deleted, and most forks are read only archives now. 
@@ -28,21 +33,68 @@
 
 
 @echo off
+
+::SELF ELEVATION SEQUENCE (UAC PROMPT)
+goto init
+:init
+ setlocal DisableDelayedExpansion
+ set cmdInvoke=1
+ set winSysFolder=System32
+ set "batchPath=%~dpnx0"
+ rem this works also from cmd shell, other than %~0
+ for %%k in (%0) do set batchName=%%~nk
+ set "vbsGetPrivileges=%temp%\OEgetPriv_%batchName%.vbs"
+ setlocal EnableDelayedExpansion
+ goto checkPrivileges
+
+:checkPrivileges
+  NET FILE 1>NUL 2>NUL
+  if '%errorlevel%' == '0' ( goto gotPrivileges ) else ( goto getPrivileges )
+
+:getPrivileges
+  if '%1'=='ELEV' (echo ELEV & shift /1 & goto gotPrivileges)
+  ECHO.
+  ECHO **************************************
+  ECHO Invoking UAC for Privilege Escalation
+  ECHO **************************************
+
+  ECHO Set UAC = CreateObject^("Shell.Application"^) > "%vbsGetPrivileges%"
+  ECHO args = "ELEV " >> "%vbsGetPrivileges%"
+  ECHO For Each strArg in WScript.Arguments >> "%vbsGetPrivileges%"
+  ECHO args = args ^& strArg ^& " "  >> "%vbsGetPrivileges%"
+  ECHO Next >> "%vbsGetPrivileges%"
+  
+  if '%cmdInvoke%'=='1' goto InvokeCmd 
+
+  ECHO UAC.ShellExecute "!batchPath!", args, "", "runas", 1 >> "%vbsGetPrivileges%"
+  goto ExecElevation
+
+:InvokeCmd
+  ECHO args = "/c """ + "!batchPath!" + """ " + args >> "%vbsGetPrivileges%"
+  ECHO UAC.ShellExecute "%SystemRoot%\%winSysFolder%\cmd.exe", args, "", "runas", 1 >> "%vbsGetPrivileges%"
+
+:ExecElevation
+ "%SystemRoot%\%winSysFolder%\WScript.exe" "%vbsGetPrivileges%" %*
+ exit /B
+
+:gotPrivileges
+ setlocal & cd /d %~dp0
+ if '%1'=='ELEV' (del "%vbsGetPrivileges%" 1>nul 2>nul  &  shift /1)
+
 cd %~dp0
 REM Creating a Newline variable (the two blank lines are required!) here in case I use it
 set NLM=^
 set NL=^^^%NLM%%NLM%^%NLM%%NLM%
 cls
 ver
-echo Reminder, This script requires administrator to run.
-
-::THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-::IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-::FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-::LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-::OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-::SOFTWARE.
-
+echo(^
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR^
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,^
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE^
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,^
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE^
+SOFTWARE.
+)
 
 ::do these reg changes with reg export file.reg 
 ::then run that file	
@@ -56,12 +108,45 @@ echo Reminder, This script requires administrator to run.
 ::TODO: Add different 'tiers' of the preconfiguration based on how many features and services it removes\
 ::https://serverfault.com/questions/653814/windows-firewall-netsh-block-all-ips-from-a-text-file
 ::Also make a reversal script
-goto one
+
+::set to the position of the command line arguments if present
+set LOGV=0
+set STARTUP=0
+set EXECUTIONPATH = %~dp0
+set FULLFILENAME = %~nx0
+::if command line argument 1 or 2 is "-l" "-s" do as follows (-l is log the output, -s is run this script at startup)
+if /i "%~1" == "-l" %LOGV%=1
+else if /i "%~2" == "-l" %LOGV%=2
+if /i "%~1" == "-s" do (
+%STARTUP%=1 
+goto startup
+)
+else if /i "%~2" == "-s" do (
+%STARTUP%=2 
+goto startup
+)
+else goto log
+
+::this will remove output from terminal unfortunately, I'd probably need WinTee or something to stop this
+:log
+IF %LOGV% EQU 1 call one > "W10BSRemover_LOG.txt"
+ELSE IF %LOGV% EQU 2 call one > "W10BSRemover_LOG.txt"
+ELSE call one
+
+:startup
+reg add Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v "W10BSRemover" /t REG_SZ /d "%EXECUTIONPATH%\%FULLFILENAME%" /f
+IF %LOGV% EQU 1 goto log
+ELSE IF %LOGV% EQU 2 goto log
+::"main" function
 :one
+echo %LOGV%
+echo %STARTUP%
+echo %EXECUTIONPATH%
+echo %FULLFILENAME%
 ::Back up and flush current hosts file and start
 type %SystemRoot%\System32\drivers\etc\hosts > %SystemRoot%\System32\drivers\etc\hosts-BACKUP
 break>%SystemRoot%\System32\drivers\etc\hosts
-::Two spyware services that have persisted in w10 since inception, deleting them here
+::Complete spyware, no utility gained from these
 sc delete DiagTrack && sc delete dmwappushservice
 ::Windows update service
 sc delete UsoSvc
@@ -92,14 +177,16 @@ route ADD 93.184.215.0 MASK 255.255.255.0 0.0.0.0
 route ADD 134.170.115.0 MASK 255.255.255.0 0.0.0.0
 route ADD 65.55.252.0 MASK 255.255.255.0 0.0.0.0
 
-
-::Servers identified in early w10 builds as telemetry-oriented. I feel that most arent active today, but they stay filtered regardless
-if not exist cmd_server_list.bat (curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/cmd_server_list.bat > cmd_server_list.bat)
-call cmd_server_list.bat
-
-REM More servers found to be ms telemetry (~467) posted on my github. I originally found these in a reddit comment ages ago. I just formatted them and gave them the prefix "0.0.0.0 "
-if not exist ms_telemetry_list.txt (curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/ms_telemetry_list.txt > ms_telemetry_list.txt)
+REM More servers found to be ms telemetry posted on my github. I originally found these either by RevEng tools and scattered across the internet. I just formatted them and gave them the prefix "0.0.0.0 "
+if not exist ms_telemetry_list.txt (curl https://github.com/InquireWithin/W10BSRemover/blob/main/ms_telemetry_list.txt > ms_telemetry_list.txt)
 type ms_telemetry_list.txt >> %SystemRoot%\System32\drivers\etc\hosts
+
+powershell -Command "Get-AppxPackage -Name *EventProvider* | Remove-AppxPackage -AllUsers"
+powershell -Command "Delete-DeliveryOptimizationCache"
+powershell -Command "Disable-AppBackgroundTaskDiagnosticLog"
+powershell -Command "Disable-WindowsErrorReporting"
+powershell -Command "Get-AppxPackage -Name *Microsoft-WindowsPhone* | Remove-AppxPackage -AllUsers"
+
 
 ::Cortana removal mechanism here might cause breaks, comment if problems arise in the forked script
 ::if not exist RemoveW10Bloat.bat (curl https://raw.githubusercontent.com/InquireWithin/Win.10-SpyWare-Bloat-Telemetry-Remove-Fork/master/RemoveW10Bloat.bat > RemoveW10Bloat.bat)
@@ -109,11 +196,10 @@ type ms_telemetry_list.txt >> %SystemRoot%\System32\drivers\etc\hosts
 if not exist Windows10Debloater.ps1 (
 curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/Windows10Debloater.ps1 > Windows10Debloater.ps1
 )
-powershell Start-Process PowerShell.exe -ArgumentList ("-NoProfile -ExecutionPolicy Bypass -File 'Windows10Debloater.ps1'" -f $PSCommandPath) -Verb RunAs
-
-
+powershell Start-Process PowerShell.exe -ArgumentList ("-ExecutionPolicy Bypass -File 'Windows10Debloater.ps1'" -f $PSCommandPath) -Verb RunAs
 
 REM orig src: https://www.hwinfo.com/misc/RemoveW10Bloat.htm
+REM any commented commands are due to an overlap with another command executed elsewhere
 REM sc stop DiagTrack
 sc stop diagnosticshub.standardcollector.service
 REM sc stop dmwappushservice
@@ -163,7 +249,7 @@ REM We will have to rename the Cortana App folder (add ".bak" to its name), but 
 REM The issue is that when Cortana process (SearchUI) is killed, it respawns very quickly
 REM So the following code needs to be quick (and it is) so we can manage to rename the folder
 REM Disabling Cortana this way on Version 1703 (RS2) will render all items in the Start Menu unavailable.
-REM So this is commented out for now until a better solution is found.
+REM I uncommented this regardless.
 taskkill /F /IM SearchUI.exe
 move "%windir%\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy" "%windir%\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy.bak"
 
@@ -259,3 +345,34 @@ REM src end
 ipconfig /flushdns
 exit
 
+
+
+
+
+::LEGACY INTERFACE (dunno why I even bothered w/ this but if I feel its useful again I'll revamp it to actually have practicality)
+::two
+::set /A isLocal = 1
+::goto one
+::exit /b 0
+
+::three
+::quit script
+::goto:eof
+::exit
+::exit /b 0
+
+::four
+::read from hosts
+::for /F "tokens=*" %%A in (%SystemRoot%\System32\drivers\etc\hosts) do (
+::  echo %%A
+::  )
+::goto main
+::exit /b 0
+
+::five
+::REM you can do this in powershell with Clear-Content as well.
+:: This is here as a very primitive "undo" mechanism
+
+::break>%SystemRoot%\System32\drivers\etc\hosts
+::goto main
+::exit /b 0
