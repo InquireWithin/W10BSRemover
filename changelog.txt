@@ -19,6 +19,15 @@ change all 'bat' files to 'cmd'
 remove alch fork
 remove "press any key to continue" after w10 debloater ps1 finishes (might be OS default)
 Microsoft\Windows\SettingSync\BackgroundUploadTask  <- remove this w/ a bit change, couldnt find original forum post where the reg file to do this is
+17/5/22 ["2.2" SEMISTABLE]
+command line args fixed (log is still awkward though as you cant see why its paused, wouldnt recommend using)
+startup regkey fixed
+powershell call to W10Debloater finally patched (though many errors occur due to Microsoft removing the ability to manually remove the packages)
+W10Debloater.ps1 has self-elevation now
+cleaned up user input interface that was taking up space
+cleaned some commenting
+removed a couple conflicting statements
+
 
 17/5/22 ["2.1" SEMISTABLE]
 added UAC prompt if script is launched without admin
