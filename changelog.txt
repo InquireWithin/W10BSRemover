@@ -19,6 +19,13 @@ change all 'bat' files to 'cmd'
 remove alch fork
 remove "press any key to continue" after w10 debloater ps1 finishes (might be OS default)
 Microsoft\Windows\SettingSync\BackgroundUploadTask  <- remove this w/ a bit change, couldnt find original forum post where the reg file to do this is
+
+
+
+18/5/22 [2.21 semistable]
+no longer any need for user input except for explorer restart
+changed order of execution so all (debloat related) batch code finishes prior to powershell script call
+
 17/5/22 ["2.2" SEMISTABLE]
 command line args fixed (log is still awkward though as you cant see why its paused, wouldnt recommend using)
 startup regkey fixed
