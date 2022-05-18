@@ -1,8 +1,7 @@
 
 #This script was assembled by mashing together all of the individual scripts of Sycrex's Windows10Debloater (https://github.com/Sycnex/Windows10Debloater)
 #I further edited it and trimmed it down based on what I've already had in the main script, but I left the contents commented so anyone could just regain the functionality by uncommenting
-
-
+# not needed due to the context this was called in Set-ExecutionPolicy Unrestricted -Force
 
 #self elevate if needed
 if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')) {
@@ -13,11 +12,49 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
  }
 }
 
-Set-ExecutionPolicy Unrestricted -Force
+#I also added DISM commands related to package removal
+#some of these are found in C:\Windows\SystemApps
+[System.Collections.ArrayList]$packages = @(
+#if an error occurs processing one of these, consider making a statement that will change the ending
+#ex if narratorquickstart_8wekyb3d8bbwe fails, try narratorquickstart_cw5n... and so on
+"windows.immersivecontrolpanel_10.0.2.1000_neutral_neutral_cw5n1h2txyewy"
+"Microsoft.VCLibs.140.00_14.0.27810.0_x86__8wekyb3d8bbwe"
+"Microsoft.Windows.FileExplorer_cw5n1h2txyewy"
+#C:\Windows\SystemApps\
+"microsoft.windows.narratorquickstart_8wekyb3d8bbwe"
+#C:\Windows\SystemApps\
+"Microsoft.XboxGameCallableUI_cw5n1h2txyewy"
+#C:\Windows\SystemApps\
+"Microsoft.MicrosoftEdge_8wekyb3d8bbwe"
+#Microsoft \ *
+"Microsoft.BioEnrollment_10.0.19041.1023_neutral__cw5n1h2txyewy"
+"Windows.CBSPreview_10.0.19041.1023_neutral_neutral_cw5n1h2txyewy"
+"Microsoft.Windows.XGpuEjectDialog_10.0.19041.1023_neutral_neutral_cw5n1h2txyewy"
+"Microsoft.Win32WebViewHost_10.0.19041.423_neutral_neutral_cw5n1h2txyewy"
+"c5e2524a-ea46-4f67-841f-6a9465d9d515_10.0.19041.1023_neutral_neutral_cw5n1h2txyewy"
+"Microsoft.Windows.SecHealthUI_10.0.19041.423_neutral__cw5n1h2txyewy"
+"Microsoft.Windows.NarratorQuickStart_10.0.19041.1023_neutral_neutral_8wekyb3d8bbwe"
+"Microsoft.LockApp_10.0.19041.1023_neutral__cw5n1h2txyewy"
+"F46D4000-FD22-4DB4-AC8E-4E1DDDE828FE_10.0.19041.1023_neutral_neutral_cw5n1h2txyewy"
+#Microsoft.XboxGameCallableUI_1000.19041.1023.0_neutral_neutral_cw5n1h2txye
+"Microsoft.XboxGameCallableUI_1000_neutral_neutral_cw5n1h2txy"
+#C:\Windows\SystemApps\
+"Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy"
+#Microsoft.Windows.StartMenuExperienceHost_10.0.19041.1023_neutral_neutral_cw5n1h2txyewy
+#C:\Windows\SystemApps\
+"Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy"
+"Microsoft.AsyncTextService_10.0.19041.1023_neutral__8wekyb3d8bbwe"
+"Microsoft.AccountsControl_10.0.19041.1023_neutral__cw5n1h2txyewy"
+)
+
+
+
+
 
 
 Write-Host "Clear last used files and folders"
-	Remove-Item %APPDATA%\Microsoft\Windows\Recent\AutomaticDestinations\*.automaticDestinations-ms -FORCE -ErrorAction SilentlyContinue$AppXApps = @(
+	#does this even function as intended without the = b/t the $AppXApps and @ ?
+	Remove-Item %APPDATA%\Microsoft\Windows\Recent\AutomaticDestinations\*.automaticDestinations-ms -FORCE -ErrorAction SilentlyContinue$AppXApps @(
 
         #Unnecessary Windows 10 AppX Apps
         "*Microsoft.BingNews*"
