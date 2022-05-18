@@ -85,6 +85,8 @@ cd %~dp0
 REM Creating a Newline variable (the two blank lines are required!) here in case I use it
 set NLM=^
 set NL=^^^%NLM%%NLM%^%NLM%%NLM%
+REM set keys to input for the user in non-automatable cases later on
+set SendKeys=CScript //nologo //E:JScript "%~F0"
 cls
 ver
 echo(^
@@ -110,39 +112,47 @@ SOFTWARE.
 ::Also make a reversal script
 
 ::set to the position of the command line arguments if present
-set LOGV=0
-set STARTUP=0
-set EXECUTIONPATH = %~dp0
-set FULLFILENAME = %~nx0
+SETLOCAL ENABLEDELAYEDEXPANSION
+set /A LOGV=0
+set /A STARTUP=0
 ::if command line argument 1 or 2 is "-l" "-s" do as follows (-l is log the output, -s is run this script at startup)
-if /i "%~1" == "-l" %LOGV%=1
-else if /i "%~2" == "-l" %LOGV%=2
+if /i "%~1" == "-l" set /A LOGV=1
+if /i "%~2" == "-l" set /A LOGV=2
 if /i "%~1" == "-s" do (
-%STARTUP%=1 
+echo setting startup to 1
+set /A STARTUP=1 
 goto startup
 )
-else if /i "%~2" == "-s" do (
-%STARTUP%=2 
+if /i "%~2" == "-s" do (
+echo setting startup to 2
+set /A STARTUP=2 
 goto startup
 )
-else goto log
+if %STARTUP% = 0 do (
+echo STARTUP=0
+goto log
+)
+:startup
+ echo Startup Func Here. STARTUP=%STARTUP%
+ reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v "WTenBSRemover" /t REG_SZ /d %~0
+ goto log
+
 
 ::this will remove output from terminal unfortunately, I'd probably need WinTee or something to stop this
 :log
-IF %LOGV% EQU 1 call one > "W10BSRemover_LOG.txt"
-ELSE IF %LOGV% EQU 2 call one > "W10BSRemover_LOG.txt"
-ELSE call one
+ echo Log Func Here. LOGV=%LOGV%
+ IF %LOGV% EQU 1 call :one > W10BSRemover_LOG.txt
+ IF %LOGV% EQU 2 call :one > W10BSRemover_LOG.txt
+ goto one
 
-:startup
-reg add Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v "W10BSRemover" /t REG_SZ /d "%EXECUTIONPATH%\%FULLFILENAME%" /f
-IF %LOGV% EQU 1 goto log
-ELSE IF %LOGV% EQU 2 goto log
+
 ::"main" function
 :one
 echo %LOGV%
 echo %STARTUP%
-echo %EXECUTIONPATH%
-echo %FULLFILENAME%
+echo %~dp0
+echo %~nx0
+echo %~0
 ::Back up and flush current hosts file and start
 type %SystemRoot%\System32\drivers\etc\hosts > %SystemRoot%\System32\drivers\etc\hosts-BACKUP
 break>%SystemRoot%\System32\drivers\etc\hosts
@@ -168,7 +178,7 @@ sc delete WSearch
 
 ::open autorun soon and check all the different automatically configured services and remove the spyware-oriented ones
 
-
+::route these selected spyware servers to 0.0.0.0 in routing table (can not be accessed)
 route ADD 131.253.14.0 MASK 255.255.255.0 0.0.0.0
 route ADD 65.52.100.0 MASK 255.255.255.0 0.0.0.0
 route ADD 65.4.54.0 MASK 255.255.255.0 0.0.0.0
@@ -183,6 +193,7 @@ type ms_telemetry_list.txt >> %SystemRoot%\System32\drivers\etc\hosts
 
 powershell -Command "Get-AppxPackage -Name *EventProvider* | Remove-AppxPackage -AllUsers"
 powershell -Command "Delete-DeliveryOptimizationCache"
+%SendKeys% "Y{ENTER}"
 powershell -Command "Disable-AppBackgroundTaskDiagnosticLog"
 powershell -Command "Disable-WindowsErrorReporting"
 powershell -Command "Get-AppxPackage -Name *Microsoft-WindowsPhone* | Remove-AppxPackage -AllUsers"
@@ -190,13 +201,12 @@ powershell -Command "Get-AppxPackage -Name *Microsoft-WindowsPhone* | Remove-App
 
 ::Cortana removal mechanism here might cause breaks, comment if problems arise in the forked script
 ::if not exist RemoveW10Bloat.bat (curl https://raw.githubusercontent.com/InquireWithin/Win.10-SpyWare-Bloat-Telemetry-Remove-Fork/master/RemoveW10Bloat.bat > RemoveW10Bloat.bat)
-::must be called in admin context, this is called in user context
-::runas /user:Administrator RemoveW10Bloat.bat
 :: Implement my forked version of w10debloater here
 if not exist Windows10Debloater.ps1 (
 curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/Windows10Debloater.ps1 > Windows10Debloater.ps1
 )
-powershell Start-Process PowerShell.exe -ArgumentList ("-ExecutionPolicy Bypass -File 'Windows10Debloater.ps1'" -f $PSCommandPath) -Verb RunAs
+
+Powershell.exe -Command "& {Start-Process Powershell.exe -ArgumentList '-ExecutionPolicy Bypass -File %~dp0Windows10Debloater.ps1' -Verb RunAs}"
 
 REM orig src: https://www.hwinfo.com/misc/RemoveW10Bloat.htm
 REM any commented commands are due to an overlap with another command executed elsewhere
@@ -209,11 +219,11 @@ REM sc stop WSearch
 sc config DiagTrack start= disabled
 sc config diagnosticshub.standardcollector.service start= disabled
 sc config dmwappushservice start= disabled
-REM sc config RemoteRegistry start= disabled
-REM sc config TrkWks start= disabled
+sc config RemoteRegistry start= disabled
+sc config TrkWks start= disabled
 sc config WMPNetworkSvc start= disabled
 sc config WSearch start= disabled
-REM sc config SysMain start= disabled
+sc config SysMain start= disabled
 
 REM *** SCHEDULED TASKS tweaks ***
 schtasks /Change /TN "Microsoft\Windows\AppID\SmartScreenSpecific" /Disable
@@ -311,13 +321,17 @@ PowerShell -Command "Get-AppxPackage *photos* | Remove-AppxPackage"
 PowerShell -Command "Get-AppxPackage *SkypeApp* | Remove-AppxPackage"
 PowerShell -Command "Get-AppxPackage *solit* | Remove-AppxPackage"
 PowerShell -Command "Get-AppxPackage *WindowsSoundRecorder* | Remove-AppxPackage"
+
+:: XboxGameCallableUI can no longer be removed this way.
 PowerShell -Command "Get-AppxPackage *xbox* | Remove-AppxPackage"
+
 PowerShell -Command "Get-AppxPackage *windowscommunicationsapps* | Remove-AppxPackage"
 PowerShell -Command "Get-AppxPackage *WindowsMaps* | Remove-AppxPackage"
 PowerShell -Command "Get-AppxPackage *CommsPhone* | Remove-AppxPackage"
 PowerShell -Command "Get-AppxPackage *ConnectivityStore* | Remove-AppxPackage"
 PowerShell -Command "Get-AppxPackage *Microsoft.Messaging* | Remove-AppxPackage"
-PowerShell -Command "Get-AppxPackage *ContentDeliveryManager* | Remove-AppxPackage"
+::Commented due to not being able to be removed anymore via this method
+:: PowerShell -Command "Get-AppxPackage *ContentDeliveryManager* | Remove-AppxPackage"
 
 @rem NOW JUST SOME TWEAKS
 REM *** Show hidden files in Explorer ***
@@ -345,34 +359,3 @@ REM src end
 ipconfig /flushdns
 exit
 
-
-
-
-
-::LEGACY INTERFACE (dunno why I even bothered w/ this but if I feel its useful again I'll revamp it to actually have practicality)
-::two
-::set /A isLocal = 1
-::goto one
-::exit /b 0
-
-::three
-::quit script
-::goto:eof
-::exit
-::exit /b 0
-
-::four
-::read from hosts
-::for /F "tokens=*" %%A in (%SystemRoot%\System32\drivers\etc\hosts) do (
-::  echo %%A
-::  )
-::goto main
-::exit /b 0
-
-::five
-::REM you can do this in powershell with Clear-Content as well.
-:: This is here as a very primitive "undo" mechanism
-
-::break>%SystemRoot%\System32\drivers\etc\hosts
-::goto main
-::exit /b 0

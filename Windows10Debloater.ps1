@@ -1,3 +1,13 @@
+#self elevate if needed
+if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')) {
+ if ([int](Get-CimInstance -Class Win32_OperatingSystem | Select-Object -ExpandProperty BuildNumber) -ge 6000) {
+  $CommandLine = "-File `"" + $MyInvocation.MyCommand.Path + "`" " + $MyInvocation.UnboundArguments
+  Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList $CommandLine
+  Exit
+ }
+}
+
+
 Write-Host "Clear last used files and folders"
 	Remove-Item %APPDATA%\Microsoft\Windows\Recent\AutomaticDestinations\*.automaticDestinations-ms -FORCE -ErrorAction SilentlyContinue$AppXApps = @(
 
@@ -126,7 +136,8 @@ Write-Host "Disabling Cortana"
     If (!(Test-Path $registryOEM)) {
         New-Item $registryOEM
     }
-        Set-ItemProperty $registryOEM  ContentDeliveryAllowed -Value 0 
+        Set-ItemProperty $registryOEM  ContentDeliveryAllowed -Value 0
+        Set-ItemProperty $registryOEM  FeatureManagementEnabled -Value 0
         Set-ItemProperty $registryOEM  OemPreInstalledAppsEnabled -Value 0 
         Set-ItemProperty $registryOEM  PreInstalledAppsEnabled -Value 0 
         Set-ItemProperty $registryOEM  PreInstalledAppsEverEnabled -Value 0 
@@ -139,7 +150,7 @@ Write-Host "Disabling Cortana"
     If (Test-Path $Holo) {
         Set-ItemProperty $Holo  FirstRunSucceeded -Value 0 
     }
-
+    <#
     #Disables Wi-fi Sense
     Write-Output "Disabling Wi-Fi Sense"
     $WifiSense1 = "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting"
@@ -190,7 +201,7 @@ Write-Host "Disabling Cortana"
         New-Item $LocationConfig
     }
     Set-ItemProperty $LocationConfig Status -Value 0 
-        
+     #>   
     #Disables People icon on Taskbar
     Write-Output "Disabling People icon on Taskbar"
     $People = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People"    
@@ -208,6 +219,8 @@ Write-Host "Disabling Cortana"
     Get-ScheduledTask  DmClient | Disable-ScheduledTask
     Get-ScheduledTask  DmClientOnScenarioDownload | Disable-ScheduledTask
     
+    #already handled in main script
+    <#
     Write-Output "Stopping and disabling WAP Push Service"
     #Stop and disable WAP Push Service
 	Stop-Service "dmwappushservice"
@@ -217,6 +230,7 @@ Write-Host "Disabling Cortana"
     #Disabling the Diagnostics Tracking Service
 	Stop-Service "DiagTrack"
 	Set-Service "DiagTrack" -StartupType Disabled
+#>
 $Keys = @(
             
         #Remove Background Tasks
@@ -295,6 +309,7 @@ Write-Host "Set Explorers Entry Point"
     }
 
 
+<#handled in main script
 Write-Output "Uninstalling OneDrive. Please wait."
     
     New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
@@ -330,7 +345,7 @@ Write-Output "Uninstalling OneDrive. Please wait."
     Set-ItemProperty $ExplorerReg2 System.IsPinnedToNameSpaceTree -Value 0
     Write-Output "Restarting Explorer that was shut down before."
     Start explorer.exe -NoNewWindow
-
+    #>
 # https://superuser.com/a/1442733
 #Requires -RunAsAdministrator
 
@@ -385,7 +400,11 @@ foreach ($regAlias in $regAliases){
 #Restart Explorer and delete the layout file
 Stop-Process -name explorer
 
+
 # Uncomment the next line to make clean start menu default for all new users
 Import-StartLayout -LayoutPath $layoutFile -MountPath $env:SystemDrive\
 
 Remove-Item $layoutFile
+
+#testing purposes only
+#echo > "C:\utils\testfile.txt"
