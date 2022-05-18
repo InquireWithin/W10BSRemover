@@ -1,3 +1,9 @@
+
+#This script was assembled by mashing together all of the individual scripts of Sycrex's Windows10Debloater (https://github.com/Sycnex/Windows10Debloater)
+#I further edited it and trimmed it down based on what I've already had in the main script, but I left the contents commented so anyone could just regain the functionality by uncommenting
+
+
+
 #self elevate if needed
 if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')) {
  if ([int](Get-CimInstance -Class Win32_OperatingSystem | Select-Object -ExpandProperty BuildNumber) -ge 6000) {
@@ -6,6 +12,8 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
   Exit
  }
 }
+
+Set-ExecutionPolicy Unrestricted -Force
 
 
 Write-Host "Clear last used files and folders"

@@ -2,13 +2,6 @@
 
 
 ::If this file was flagged a security risk, know that this is why: https://www.bleepingcomputer.com/news/microsoft/windows-10-hosts-file-blocking-telemetry-is-now-flagged-as-a-risk/
-:: justification for not using firewall (at least not yet):
-:: Note that Windows will eventually remove the ability to use the batch interpreter to manage its firewall
-:: You should also be aware that Microsoft, as the firewall and the OS are proprietary, may have a hidden rule
-:: within the code that will interrupt or override these connection blocks.
-:: It is much preferred you use almost any other type of firewall or packet blocking/filtering solution
-::Some say that microsoft ignores telemetry server blocking via hosts file as well.
-::TL;DR use pi hole for blocking microsoft telemetry just to be safe.
 
 ::Will probably add OEM-specific debloating and exception handling soon enough
 
@@ -22,8 +15,6 @@
 ::by default %SystemRoot% is C:\Windows
 
 ::Make sure to check services.msc for some other problematic services (like KillerAnalyticsService for users w/ Killer network drivers)
-
-::choice /y yn /n /m "heres a choice (y/n)"
 
 ::There is also a proprietary software option for this (OOSU10) that ofc I can't include b/c proprietary.
 ::Implement DWS (Destroy Windows 10 Spying) if possible. If not, use manually from here (https://github.com/spinda/Destroy-Windows-10-Spying) <- Forked version
@@ -115,17 +106,18 @@ SOFTWARE.
 SETLOCAL ENABLEDELAYEDEXPANSION
 set /A LOGV=0
 set /A STARTUP=0
+::there was another var set here
 ::if command line argument 1 or 2 is "-l" "-s" do as follows (-l is log the output, -s is run this script at startup)
 if /i "%~1" == "-l" set /A LOGV=1
 if /i "%~2" == "-l" set /A LOGV=2
 if /i "%~1" == "-s" do (
+set /A STARTUP=1
 echo setting startup to 1
-set /A STARTUP=1 
 goto startup
 )
 if /i "%~2" == "-s" do (
+set /A STARTUP=2
 echo setting startup to 2
-set /A STARTUP=2 
 goto startup
 )
 if %STARTUP% = 0 do (
@@ -134,7 +126,8 @@ goto log
 )
 :startup
  echo Startup Func Here. STARTUP=%STARTUP%
- reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v "WTenBSRemover" /t REG_SZ /d %~0
+ ::check or query the reg key first before doing add, set can be used if already
+ reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v "WTenBSRemover" /t REG_SZ /d %~0 /f
  goto log
 
 
@@ -175,6 +168,10 @@ sc delete wisvc
 ::Don't worry though, the taskbar looks far better without it, and it can still be accessed via super + s
 sc delete WSearch
 
+::could be catastrophic, will test in detail
+:: del %windir%\DiagTrack
+:: del %windir%\diagnostics
+
 
 ::open autorun soon and check all the different automatically configured services and remove the spyware-oriented ones
 
@@ -191,22 +188,25 @@ REM More servers found to be ms telemetry posted on my github. I originally foun
 if not exist ms_telemetry_list.txt (curl https://github.com/InquireWithin/W10BSRemover/blob/main/ms_telemetry_list.txt > ms_telemetry_list.txt)
 type ms_telemetry_list.txt >> %SystemRoot%\System32\drivers\etc\hosts
 
+
+::DISM commands. I think of DISM as Disk Image System Management, its a tool that will modify a disk image.
+::option "-Online" means I am targeting a currently running disk image, the one you're running the script on.
+::This is a proposed solution to the problem of non-removable pre-provisioned packages.
+::Log path by default (can be changed by -LogPath) is %WINDIR%\Logs\Dism\dism.log
+::powershell -Command Remove-WindowsPackage -Online -NoRestart -PackageName "
+
+
+
+
+
 powershell -Command "Get-AppxPackage -Name *EventProvider* | Remove-AppxPackage -AllUsers"
-powershell -Command "Delete-DeliveryOptimizationCache"
-%SendKeys% "Y{ENTER}"
+powershell -Command "Delete-DeliveryOptimizationCache" -Force
 powershell -Command "Disable-AppBackgroundTaskDiagnosticLog"
 powershell -Command "Disable-WindowsErrorReporting"
 powershell -Command "Get-AppxPackage -Name *Microsoft-WindowsPhone* | Remove-AppxPackage -AllUsers"
 
 
-::Cortana removal mechanism here might cause breaks, comment if problems arise in the forked script
-::if not exist RemoveW10Bloat.bat (curl https://raw.githubusercontent.com/InquireWithin/Win.10-SpyWare-Bloat-Telemetry-Remove-Fork/master/RemoveW10Bloat.bat > RemoveW10Bloat.bat)
-:: Implement my forked version of w10debloater here
-if not exist Windows10Debloater.ps1 (
-curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/Windows10Debloater.ps1 > Windows10Debloater.ps1
-)
 
-Powershell.exe -Command "& {Start-Process Powershell.exe -ArgumentList '-ExecutionPolicy Bypass -File %~dp0Windows10Debloater.ps1' -Verb RunAs}"
 
 REM orig src: https://www.hwinfo.com/misc/RemoveW10Bloat.htm
 REM any commented commands are due to an overlap with another command executed elsewhere
@@ -292,7 +292,7 @@ reg add "HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" /v UxOption /t REG_D
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" /v DODownloadMode /t REG_DWORD /d 0 /f
 
 @REM *** Disable Cortana & Telemetry ***
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "AllowCortana" /t REG_DWORD /d 0
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "AllowCortana" /t REG_DWORD /d 0 /f
 
 REM *** Hide the search box from taskbar. You can still search by pressing the Win key and start typing what you're looking for ***
 REM 0 = hide completely, 1 = show only icon, 2 = show long search box
@@ -356,6 +356,17 @@ pause
 start /wait TASKKILL /F /IM explorer.exe
 start explorer.exe
 REM src end
+
+
+::Cortana removal mechanism here might cause breaks, comment if problems arise in the forked script
+::if not exist RemoveW10Bloat.bat (curl https://raw.githubusercontent.com/InquireWithin/Win.10-SpyWare-Bloat-Telemetry-Remove-Fork/master/RemoveW10Bloat.bat > RemoveW10Bloat.bat)
+:: Implement my forked version of w10debloater here
+if not exist Windows10Debloater.ps1 (
+curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/Windows10Debloater.ps1 > Windows10Debloater.ps1
+)
+
+Powershell.exe -Command "& {Start-Process Powershell.exe -ArgumentList '-ExecutionPolicy Bypass -File %~dp0Windows10Debloater.ps1' -Verb RunAs}"
+
 ipconfig /flushdns
 exit
 
