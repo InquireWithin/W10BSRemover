@@ -22,7 +22,7 @@
 :: The original repo for DWS was deleted, and most forks are read only archives now. 
 :: Another fork (https://github.com/Wohlstand/Destroy-Windows-10-Spying)
 
-
+::Another option instead of going through this confusing rigamarole is using Windows 10 Enterprise LTSB. Though I don't know if AutoKMS or W10DigitalActivator work on it.
 @echo off
 
 ::SELF ELEVATION SEQUENCE (UAC PROMPT)
@@ -168,6 +168,10 @@ sc delete wisvc
 ::Don't worry though, the taskbar looks far better without it, and it can still be accessed via super + s
 sc delete WSearch
 
+del /s /q "%windir%\tracing\*"
+reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\SecurityHealth /f
+reg add HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Clipboard /v IsClipboardSignalProducingFeatureAvailable /t REG_DWORD /d 0 /f
+reg add HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Clipboard /v IsCloudAndHistoryFeatureAvailable /t REG_DWORD /d 0 /f
 ::could be catastrophic, will test in detail
 :: del %windir%\DiagTrack
 :: del %windir%\diagnostics
@@ -193,12 +197,18 @@ type ms_telemetry_list.txt >> %SystemRoot%\System32\drivers\etc\hosts
 ::option "-Online" means I am targeting a currently running disk image, the one you're running the script on.
 ::This is a proposed solution to the problem of non-removable pre-provisioned packages.
 ::Log path by default (can be changed by -LogPath) is %WINDIR%\Logs\Dism\dism.log
-::powershell -Command Remove-WindowsPackage -Online -NoRestart -PackageName "
+::found in Windows10Debloater.ps1
+::Example:
+::powershell -Command Remove-WindowsPackage -Online -NoRestart -PackageName "windows.immersivecontrolpanel_10.0.2.1000_neutral_neutral_cw5n1h2txyewy" -Force
 
 
+::this could possibly cause a blue screen
+del /s /q "C:\Windows\SystemApps\"
 
+::Only if you have another photo viewer
+::reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\FilePicker\Config\StartLocation" /v PicturesLibrary /f
 
-
+powershell -Command "Get-AppXProvisionedPackage -Online | Remove-AppxProvisionedPackage -Online"
 powershell -Command "Get-AppxPackage -Name *EventProvider* | Remove-AppxPackage -AllUsers"
 powershell -Command "Delete-DeliveryOptimizationCache" -Force
 powershell -Command "Disable-AppBackgroundTaskDiagnosticLog"
@@ -352,6 +362,7 @@ rd "%PROGRAMDATA%\Microsoft OneDrive" /Q /S >NUL 2>&1
 reg add "HKEY_CLASSES_ROOT\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}\ShellFolder" /f /v Attributes /t REG_DWORD /d 0 >NUL 2>&1
 reg add "HKEY_CLASSES_ROOT\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}\ShellFolder" /f /v Attributes /t REG_DWORD /d 0 >NUL 2>&1
 echo OneDrive has been removed. Windows Explorer needs to be restarted.
+del %userprofile%\Desktop\OneDriveBackupFiles
 pause
 start /wait TASKKILL /F /IM explorer.exe
 start explorer.exe

@@ -47,7 +47,9 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 "Microsoft.AccountsControl_10.0.19041.1023_neutral__cw5n1h2txyewy"
 )
 
-
+foreach ($package in $packages) {
+	Remove-AppXProvisionedPackage -Online -PackageName $package
+}
 
 
 
@@ -122,9 +124,9 @@ Write-Host "Clear last used files and folders"
     Get-AppxProvisionedPackage -Online | Remove-AppxProvisionedPackage -Online
 
 Write-Host "Disabling Cortana"
-    $Cortana1 = "HKCU:\SOFTWARE\Microsoft\Personalization\Settings"
-    $Cortana2 = "HKCU:\SOFTWARE\Microsoft\InputPersonalization"
-    $Cortana3 = "HKCU:\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore"
+    $Cortana1 = "HKEY_CURRENT_USER:\SOFTWARE\Microsoft\Personalization\Settings"
+    $Cortana2 = "HKEY_CURRENT_USER:\SOFTWARE\Microsoft\InputPersonalization"
+    $Cortana3 = "HKEY_CURRENT_USER:\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore"
 	If (!(Test-Path $Cortana1)) {
 		New-Item $Cortana1
 	}
@@ -155,7 +157,7 @@ Write-Host "Disabling Cortana"
     #Disables Web Search in Start Menu
     Write-Output "Disabling Bing Search in Start Menu"
     $WebSearch = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
-    Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" BingSearchEnabled -Value 0 
+    Set-ItemProperty "HKEY_CURRENT_USER:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" BingSearchEnabled -Value 0 
 	If (!(Test-Path $WebSearch)) {
         New-Item $WebSearch
 	}
@@ -163,7 +165,7 @@ Write-Host "Disabling Cortana"
             
     #Stops the Windows Feedback Experience from sending anonymous data
     Write-Output "Stopping the Windows Feedback Experience program"
-    $Period = "HKCU:\Software\Microsoft\Siuf\Rules"
+    $Period = "HKEY_CURRENT_USER:\Software\Microsoft\Siuf\Rules"
     If (!(Test-Path $Period)) { 
         New-Item $Period
     }
@@ -172,7 +174,7 @@ Write-Host "Disabling Cortana"
     #Prevents bloatware applications from returning and removes Start Menu suggestions               
     Write-Output "Adding Registry key to prevent bloatware apps from returning"
     $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
-    $registryOEM = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
+    $registryOEM = "HKEY_CURRENT_USER:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
     If (!(Test-Path $registryPath)) { 
         New-Item $registryPath
     }
@@ -191,7 +193,7 @@ Write-Host "Disabling Cortana"
     
     #Preping mixed Reality Portal for removal    
     Write-Output "Setting Mixed Reality Portal value to 0 so that you can uninstall it in Settings"
-    $Holo = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Holographic"    
+    $Holo = "HKEY_CURRENT_USER:\Software\Microsoft\Windows\CurrentVersion\Holographic"    
     If (Test-Path $Holo) {
         Set-ItemProperty $Holo  FirstRunSucceeded -Value 0 
     }
@@ -213,7 +215,7 @@ Write-Host "Disabling Cortana"
         
     #Disables live tiles
     Write-Output "Disabling live tiles"
-    $Live = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications"    
+    $Live = "HKEY_CURRENT_USER:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications"    
     If (!(Test-Path $Live)) {      
         New-Item $Live
     }
@@ -249,7 +251,7 @@ Write-Host "Disabling Cortana"
      #>   
     #Disables People icon on Taskbar
     Write-Output "Disabling People icon on Taskbar"
-    $People = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People"    
+    $People = "HKEY_CURRENT_USER:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People"    
     If (!(Test-Path $People)) {
         New-Item $People
     }
@@ -279,34 +281,34 @@ Write-Host "Disabling Cortana"
 $Keys = @(
             
         #Remove Background Tasks
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\46928bounde.EclipseManager_2.2.4.51_neutral__a5h4egax66k6y"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.MicrosoftOfficeHub_17.7909.7600.0_x64__8wekyb3d8bbwe"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\46928bounde.EclipseManager_2.2.4.51_neutral__a5h4egax66k6y"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.MicrosoftOfficeHub_17.7909.7600.0_x64__8wekyb3d8bbwe"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.BackgroundTasks\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
             
         #Windows File
-        "HKCR:\Extensions\ContractId\Windows.File\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.File\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
             
         #Registry keys to delete if they aren't uninstalled by RemoveAppXPackage/RemoveAppXProvisionedPackage
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\46928bounde.EclipseManager_2.2.4.51_neutral__a5h4egax66k6y"
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.Launch\PackageId\46928bounde.EclipseManager_2.2.4.51_neutral__a5h4egax66k6y"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.Launch\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.Launch\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
             
         #Scheduled Tasks to delete
-        "HKCR:\Extensions\ContractId\Windows.PreInstalledConfigTask\PackageId\Microsoft.MicrosoftOfficeHub_17.7909.7600.0_x64__8wekyb3d8bbwe"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.PreInstalledConfigTask\PackageId\Microsoft.MicrosoftOfficeHub_17.7909.7600.0_x64__8wekyb3d8bbwe"
             
         #Windows Protocol Keys
-        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
-        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
-        "HKCR:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.Protocol\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.PPIProjection_10.0.15063.0_neutral_neutral_cw5n1h2txyewy"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.XboxGameCallableUI_1000.15063.0.0_neutral_neutral_cw5n1h2txyewy"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.Protocol\PackageId\Microsoft.XboxGameCallableUI_1000.16299.15.0_neutral_neutral_cw5n1h2txyewy"
                
         #Windows Share Target
-        "HKCR:\Extensions\ContractId\Windows.ShareTarget\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
+        "HKEY_CLASSES_ROOT:\Extensions\ContractId\Windows.ShareTarget\PackageId\ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24pqs290vpjk0"
     )
         
     #This writes the output of each key it is removing and also removes the keys listed above.
@@ -321,13 +323,13 @@ $Keys = @(
 #				3 		Downloads (The Download-Folder)
 
 Write-Host "Set Explorers Entry Point"
-	$LaunchTo = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+	$LaunchTo = "HKEY_CURRENT_USER:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
 	Set-ItemProperty $LaunchTo LaunchTo -Value 1
 #Stops edge from taking over as the default .PDF viewer    
     Write-Output "Stopping Edge from taking over as the default .PDF viewer"
-    $NoPDF = "HKCR:\.pdf"
-    $NoProgids = "HKCR:\.pdf\OpenWithProgids"
-    $NoWithList = "HKCR:\.pdf\OpenWithList" 
+    $NoPDF = "HKEY_CLASSES_ROO:\.pdf"
+    $NoProgids = "HKEY_CLASSES_ROO:\.pdf\OpenWithProgids"
+    $NoWithList = "HKEY_CLASSES_ROO:\.pdf\OpenWithList" 
     If (!(Get-ItemProperty $NoPDF  NoOpenWith)) {
         New-ItemProperty $NoPDF NoOpenWith 
     }        
@@ -348,7 +350,7 @@ Write-Host "Set Explorers Entry Point"
     }
             
     #Appends an underscore '_' to the Registry key for Edge
-    $Edge = "HKCR:\AppXd4nrz8ff68srnhf9t5a8sbjyar1cr723_"
+    $Edge = "HKEY_CLASSES_ROO:\AppXd4nrz8ff68srnhf9t5a8sbjyar1cr723_"
     If (Test-Path $Edge) {
         Set-Item $Edge AppXd4nrz8ff68srnhf9t5a8sbjyar1cr723_ 
     }
@@ -357,10 +359,10 @@ Write-Host "Set Explorers Entry Point"
 <#handled in main script
 Write-Output "Uninstalling OneDrive. Please wait."
     
-    New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
+    New-PSDrive  HKEY_CLASSES_ROO -PSProvider Registry -Root HKEY_CLASSES_ROOT
     $onedrive = "$env:SYSTEMROOT\SysWOW64\OneDriveSetup.exe"
-    $ExplorerReg1 = "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}"
-    $ExplorerReg2 = "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}"
+    $ExplorerReg1 = "HKEY_CLASSES_ROO:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}"
+    $ExplorerReg2 = "HKEY_CLASSES_ROO:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}"
 	Stop-Process -Name "OneDrive*"
 	Start-Sleep 2
 	If (!(Test-Path $onedrive)) {
@@ -416,7 +418,7 @@ If(Test-Path $layoutFile)
 #Creates the blank layout file
 $START_MENU_LAYOUT | Out-File $layoutFile -Encoding ASCII
 
-$regAliases = @("HKLM", "HKCU")
+$regAliases = @("HKLM", "HKEY_CURRENT_USER")
 
 #Assign the start layout and force it to apply with "LockedStartLayout" at both the machine and user level
 foreach ($regAlias in $regAliases){
