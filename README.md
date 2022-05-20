@@ -101,16 +101,27 @@ I am convinced it is an impossibility to scrub away and remove provisioned packa
 
 
 1> Administrators and users are locked to read-only access to the %ProgramFiles%\SystemApps folder where most provisioned packages reside.
+
 2> Provisioned packages will change names when updated sometimes.
+
 3> Semi-Random select string of characters appended at the end of the service names.
+
 4> No longer any means of running a batch script as a service (and getting SYSTEM permissions).
+
 5> You cannot create an account which can mirror these permissions in any way.
+
 6> Local provisions are still protected by SYSTEM, and a couple other arcane groups like "ALL RESTRICTED APP PACKAGES".
+
 7> Cannot be removed with "turn windows features on or off" despite error messages claiming otherwise.
+
 8> Evades removal via DISM by marking valid package names as invalid parameters in a separate logic block.
+
 9> The presence of ~3 different arcane aliases for each of the packages used in different contexts, sometimes even needing an absolute path along for the ride.
+
 10> Hidden attributes (ex: NonRemovable = True) that originate from some hidden file impossible to see even with the hidden file and supperhidden file reghacks enabled.
+
 11> Remove-AppXProvisioned package may as well be decor as it seemingly serves no functional purpose anymore.
+
 and more utter nonsense that I'm too infuriated by to list here.
 
 
