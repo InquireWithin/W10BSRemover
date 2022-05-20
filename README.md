@@ -122,6 +122,8 @@ I am convinced it is an impossibility to scrub away and remove provisioned packa
 
 11> Remove-AppXProvisioned package may as well be decor as it seemingly serves no functional purpose anymore.
 
+12> Control guards are enabled, and high entropy is set to be permanently enabled (harder to do process replacment or stack overflow)
+
 and more utter nonsense that I'm too infuriated by to list here.
 
 
