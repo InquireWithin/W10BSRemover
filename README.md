@@ -120,9 +120,9 @@ I am convinced it is an impossibility to scrub away and remove provisioned packa
 
 10> Hidden attributes (ex: NonRemovable = True) that originate from some hidden file impossible to see even with the hidden file and supperhidden file reghacks enabled.
 
-11> Remove-AppXProvisioned package may as well be decor as it seemingly serves no functional purpose anymore.
+11> Remove-AppXProvisioned package may as well be decoration as it seemingly serves no functional purpose anymore.
 
-12> Control guards are enabled, and high entropy is set to be permanently enabled (harder to do process replacment or stack overflow)
+12> Control guards are enabled, and high entropy is set to be permanently enabled (harder to do process replacement or stack overflow). I also don't believe these will get affected by your security policy either.
 
 and more utter nonsense that I'm too infuriated by to list here.
 
