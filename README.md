@@ -91,11 +91,14 @@ Restore the registry keys. You can also use its whitelist.
 These two scripts ▶️ Forward ▶️ versions are >50% of the script's core. This will lessen as I add my own findings and ensure they dont cause breakage.
 
 If you haven't for whatever reason gone into developer settings and enabled "Allow third party ..." to invalidate 95% of the MS Store's use case, do so.
+
 **{6} LIMITATIONS**
 
 There are many limitations on applying such a script in the current year, and there's a good reason you dont hear of any continued development on this topic, as it gets mostly invalidated by what I'm about to tell you.
 
+
 I am convinced it is an impossibility to scrub away and remove privisioned packages from a running ISO. Such a thing used to be quite simple a few years back, you'd just do a Remove-AppxPackage or Remove-AppxProvisionedPackage. The difference between a provisioned package and one that is installed is that the provisioned packages are built into the ISO itself, and are immediately deployed upon the creation of a new user account (which is why you should clean the disk image before a new user account is first created). Removal for this seems to be patched up all the time (Also why I recommend using an older ISO archived somewhere). Here's a few limitations on specifically the removal of provisioned packages ALONE:
+
 
 1> Administrators and users are locked to read-only access to the %ProgramFiles%\SystemApps folder where most provisioned packages reside
 2> Provisioned packages will change names when updated sometimes
@@ -109,11 +112,15 @@ I am convinced it is an impossibility to scrub away and remove privisioned packa
 10> Hidden attributes (ex: NonRemovable = True) that originate from some hidden file impossible to see even with the hidden file and supperhidden file reghacks enabled.
 and more utter nonsense that I'm too infuriated by to list here
 
+
 Ending tasks with SYSTEM level is also an impossibility so the best bet is the registry, however some of those keys revert back at pseudorandom times. Services will sometimes start regardless if they've been completely disabled. Cortana removal method is dodgy and likely to be patched soon or was patched in W11. The best tool in the arsenal is the "Indiana Jones" swap seen in the Cortana removal method, or creating a binary file that is to be ran as a service and gamble that SYSTEM accepts its commands (Unlikely b/c the OS will see it as an unverified and unsigned service).
+
 
 Everything in this OS is an inconsistent array of half-baked systems piled atop eachother and set ablaze while Microsoft dances around it.  Archive any old ISO's you have and never use W10 for anything except RevEng or Gaming (the latter if you absolutely must, though I recommend using QEMU/VirtManager rather than bare metal). 
 
+
 The most agonizing thought of all this is that Windows 11 has magnified all the horrors of the aforementioned, and that was the only purpose for its creation.
+
 
 **{7} Concluding Statement and Known Bugs/Inconsistencies**
 
