@@ -21,7 +21,7 @@ This script, and others similar, may be flagged as malware due to the editing of
 ## Disclaimer
 No, I am not responsible for anything to your system, nor am I responsible for any changes in any form to your system. I highly advise you use one of the STABLE versions in the repo or commit history. There is no warranty for this software (see LICENSE). You are running this hopefully with the knowledge of what the script does and you are running this at your own discretion. By running the script, you acknowledge this risk. I suggest you get a barebones understanding of what is happening so you can course correct should any unwanted behavior occur (likely due to windows trying to correct these changes). This isn't mandatory and the script will work swimmingly regardless, but it's always a good idea to check the code.
 
-This script was never, explicitly or implicity, claiming to remove ALL Windows bloat, spyware, or telemetry. The goal is to pluck apart and silence the most apparent, low-hanging bloat, alongside some more hidden junk without going into "breaking the OS" territory. The intent is to utilize my anecdotal experience alongside other user's findings to remove __as much as feasible__. "Bloat" is subjective, and you should comment/remove lines of code that remove something you may consider useful. I may curate this in the future. Also, fully debloating a proprietary operating system is essentially an impossible ask. If you're this worried, use Linux (I recommend Cinnamon Mint or Garuda if you wish to keep a windows workflow and want something that "just works"). 
+This script was never, explicitly or implicity, claiming to remove ALL Windows bloat, spyware, or telemetry (See {6}). The goal is to pluck apart and silence the most apparent, low-hanging bloat, alongside some more hidden junk without going into "breaking the OS" territory. The intent is to utilize my anecdotal experience alongside other user's findings to remove __as much as feasible__. "Bloat" is subjective, and you should comment/remove lines of code that remove something you may consider useful. I may curate this in the future. Also, fully debloating a proprietary operating system is essentially an impossible ask. If you're this worried, use Linux (I recommend Cinnamon Mint or Garuda if you wish to keep a windows workflow and want something that "just works"). 
 
 Yes, there are a couple bugs (see {4} and changelog.txt), that's the name of the software game. I try to resolve what I can.
 Yes, it is relatively unpolished. At the end of the day, it's a script originally designed for personal use: I made it public for others' benefit.
@@ -88,11 +88,34 @@ Right click on the file in explorer -> Run as Administrator
 
 Restore the registry keys. You can also use its whitelist.
 
-These two scripts ▶️ Forward ▶️ versions are >80% of the script's core. This will lessen as I add my own findings and ensure they dont cause breakage.
+These two scripts ▶️ Forward ▶️ versions are >50% of the script's core. This will lessen as I add my own findings and ensure they dont cause breakage.
 
 If you haven't for whatever reason gone into developer settings and enabled "Allow third party ..." to invalidate 95% of the MS Store's use case, do so.
+**{6} LIMITATIONS**
 
-**{6} Concluding Statement and Known Bugs/Inconsistencies**
+There are many limitations on applying such a script in the current year, and there's a good reason you dont hear of any continued development on this topic, as it gets mostly invalidated by what I'm about to tell you.
+
+I am convinced it is an impossibility to scrub away and remove privisioned packages from a running ISO. Such a thing used to be quite simple a few years back, you'd just do a Remove-AppxPackage or Remove-AppxProvisionedPackage. The difference between a provisioned package and one that is installed is that the provisioned packages are built into the ISO itself, and are immediately deployed upon the creation of a new user account (which is why you should clean the disk image before a new user account is first created). Removal for this seems to be patched up all the time (Also why I recommend using an older ISO archived somewhere). Here's a few limitations on specifically the removal of provisioned packages ALONE:
+
+1> Administrators and users are locked to read-only access to the %ProgramFiles%\SystemApps folder where most provisioned packages reside
+2> Provisioned packages will change names when updated sometimes
+3> Semi-Random select string of characters appended at the end of the service names
+4> No longer any means of running a batch script as a service (and getting SYSTEM permissions)
+5> You cannot create an account which can mirror these permissions in any way
+6> Local provisions are still protected by SYSTEM, and a couple other arcane groups like "ALL RESTRICTED APP PACKAGES".
+7> Cannot be removed with "turn windows features on or off" despite error messages claiming otherwise.
+8> Evades removal via DISM by marking valid package names as invalid parameters in a seperate logic block
+9> The presence of ~3 different arcane aliases for each of the packages used in different contexts, sometimes even needing an absolute path along for the ride.
+10> Hidden attributes (ex: NonRemovable = True) that originate from some hidden file impossible to see even with the hidden file and supperhidden file reghacks enabled.
+and more utter nonsense that I'm too infuriated by to list here
+
+Ending tasks with SYSTEM level is also an impossibility so the best bet is the registry, however some of those keys revert back at pseudorandom times. Services will sometimes start regardless if they've been completely disabled. Cortana removal method is dodgy and likely to be patched soon or was patched in W11. The best tool in the arsenal is the "Indiana Jones" swap seen in the Cortana removal method, or creating a binary file that is to be ran as a service and gamble that SYSTEM accepts its commands (Unlikely b/c the OS will see it as an unverified and unsigned service).
+
+Everything in this OS is an inconsistent array of half-baked systems piled atop eachother and set ablaze while Microsoft dances around it.  Archive any old ISO's you have and never use W10 for anything except RevEng or Gaming (the latter if you absolutely must, though I recommend using QEMU/VirtManager rather than bare metal). 
+
+The most agonizing thought of all this is that Windows 11 has magnified all the horrors of the aforementioned, and that was the only purpose for its creation.
+
+**{7} Concluding Statement and Known Bugs/Inconsistencies**
 
 Lastly, this script is a bit "volatile". What I mean by this is that **effects on individual systems may vary**. I am not responsible for any system damage, data loss, or unwanted behavior. However, I should state that these variations are very mild. To name a few I have seen: 
 
