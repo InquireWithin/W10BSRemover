@@ -1,10 +1,5 @@
 :: 14/4/22 LB
 
-
-::If this file was flagged a security risk, know that this is why: https://www.bleepingcomputer.com/news/microsoft/windows-10-hosts-file-blocking-telemetry-is-now-flagged-as-a-risk/
-
-::Will probably add OEM-specific debloating and exception handling soon enough
-
 ::If this file was flagged a security risk, know that this is why: https://www.bleepingcomputer.com/news/microsoft/windows-10-hosts-file-blocking-telemetry-is-now-flagged-as-a-risk/
 
 ::NOTE: This script ASSUMES your registry key:
@@ -14,8 +9,6 @@
 ::the file that will be edited is %SystemRoot%\System32\drivers\etc
 ::by default %SystemRoot% is C:\Windows
 
-::Make sure to check services.msc for some other problematic services (like KillerAnalyticsService for users w/ Killer network drivers)
-
 ::There is also a proprietary software option for this (OOSU10) that ofc I can't include b/c proprietary.
 ::Implement DWS (Destroy Windows 10 Spying) if possible. If not, use manually from here (https://github.com/spinda/Destroy-Windows-10-Spying) <- Forked version
 :: If I do, include the apache license alongside it (https://www.apache.org/licenses/LICENSE-2.0) as it is licensed under Apache.
@@ -23,6 +16,23 @@
 :: Another fork (https://github.com/Wohlstand/Destroy-Windows-10-Spying)
 
 ::Another option instead of going through this confusing rigamarole is using Windows 10 Enterprise LTSB. Though I don't know if AutoKMS or W10DigitalActivator work on it.
+
+::Recommendations that I wont/cant script here that will stengthen your control in the war against the operating system and/or its components.
+::create a "super admin" account so you can maximize control over what you do with your system and what runs on it.
+::If you use a microsoft acc to sign in, change to a local account
+::Request data deletions locally via settings (probably in account privacy or protection), and from the microsoft account panel via browser if you were/are using MS account to log on
+::Download Process Explorer, and replace taskmanager with it. (launch any instance of it, or the native task manager with: super + r -> "taskmgr" -> enter)
+::Download autoruns to see hidden/arcane scheduled tasks you can curate and manually kill to your liking. ProcExp (Process Explorer) also helps with this.
+::go into windows security settings and turn off "tamper prevention" (as it prevents you from changing things around, not malware), turn of all cloud-based "features" as well
+::Turn off internet connection whenever you dont actively need it or wont be using it for the next twenty or so minutes at least
+::Remove automatic internet connection on launch, this may be only an option via your network engine, it will also help w/ above
+::Make sure to check services.msc for some other problematic services (like KillerAnalyticsService for users w/ Killer network drivers)
+::If you have javs on your system, reduce some bandwith by killing (and preventing from starting up on login) the services: jucheck.exe and jusched.exe
+::Use the ublock origin domain blocker list, it can be found in the "resources" repo of my github @ https://github.com/InquireWithin/resources/blob/main/ublock_adblock_server_filter.txt
+:: ^ copy and paste this into your hosts file (C:\Windows\System32\drivers\etc\hosts) and save. Some websites will say you have an adblocker though, so you can save a backup of the hosts file, clear the hosts file, do whatever, then put the addresses back
+::I cant write any code that would globally stop applications from stealing focus without your permission or content, which renders >1 monitor setups useless.
+::Microsoft refuses to fix this. The best you can do is use tools like autoruns to find the offender, and kill/delete/configure the software.
+::Remove bitlocker encryption. Don't just delete random files it relies on though, you want to properly uninstall this one or your files might be locked up forever. This schema prevents you from accessing certain system folders or elements.
 @echo off
 
 ::SELF ELEVATION SEQUENCE (UAC PROMPT)
@@ -89,10 +99,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE^
 SOFTWARE.
 )
 
-::do these reg changes with reg export file.reg 
-::then run that file	
-::TODO: Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection set both AllowTelemetry and MaxTelemetryAllowed to 0.
-::TODO: check if Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\ScheduledDiagnostics EnabledExecution can be set to 0.
 ::TODO: check keys in Computer\HKEY_CURRENT_USER\SOFTWARE\Microsoft\Edge\
 ::TODO: check if Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\MicrosoftEdge OSIntegrationLevel can be set to 0.
 ::TODO: Computer\HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Cortana toggle to 0
@@ -110,6 +116,10 @@ set /A STARTUP=0
 ::if command line argument 1 or 2 is "-l" "-s" do as follows (-l is log the output, -s is run this script at startup)
 if /i "%~1" == "-l" set /A LOGV=1
 if /i "%~2" == "-l" set /A LOGV=2
+if %STARTUP% = 0 do (
+echo STARTUP=0
+goto log
+)
 if /i "%~1" == "-s" do (
 set /A STARTUP=1
 echo setting startup to 1
@@ -120,10 +130,7 @@ set /A STARTUP=2
 echo setting startup to 2
 goto startup
 )
-if %STARTUP% = 0 do (
-echo STARTUP=0
-goto log
-)
+
 :startup
  echo Startup Func Here. STARTUP=%STARTUP%
  ::check or query the reg key first before doing add, set can be used if already
@@ -148,7 +155,11 @@ echo %~nx0
 echo %~0
 ::Back up and flush current hosts file and start
 type %SystemRoot%\System32\drivers\etc\hosts > %SystemRoot%\System32\drivers\etc\hosts-BACKUP
-break>%SystemRoot%\System32\drivers\etc\hosts
+::back up the windows store access control lists, stored in %SystemRoot%\System32
+icacls "%ProgramFiles%\WindowsApps" /save WindowsApps.acl
+:: if a serious error occurs w/ this use: icacls "%ProgramFiles%" /restore WindowsApps.acl
+
+:: break>%SystemRoot%\System32\drivers\etc\hosts :: Use this if testing/debugging 
 ::Complete spyware, no utility gained from these
 sc delete DiagTrack && sc delete dmwappushservice
 ::Windows update service
@@ -168,15 +179,6 @@ sc delete wisvc
 ::Don't worry though, the taskbar looks far better without it, and it can still be accessed via super + s
 sc delete WSearch
 
-del /s /q "%windir%\tracing\*"
-reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\SecurityHealth /f
-reg add HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Clipboard /v IsClipboardSignalProducingFeatureAvailable /t REG_DWORD /d 0 /f
-reg add HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Clipboard /v IsCloudAndHistoryFeatureAvailable /t REG_DWORD /d 0 /f
-::could be catastrophic, will test in detail
-:: del %windir%\DiagTrack
-:: del %windir%\diagnostics
-
-
 ::open autorun soon and check all the different automatically configured services and remove the spyware-oriented ones
 
 ::route these selected spyware servers to 0.0.0.0 in routing table (can not be accessed)
@@ -193,6 +195,57 @@ if not exist ms_telemetry_list.txt (curl https://github.com/InquireWithin/W10BSR
 type ms_telemetry_list.txt >> %SystemRoot%\System32\drivers\etc\hosts
 
 
+::Intel has a service specifically to act as a "guard" for other software. This is just a way to protect bloated applications runstate. commented until tested, there are more dirs w/ this svc exec in them in the parent dir
+::set intelswprotect1 = C:\Windows\System32\DriverStore\FileRepository\sgx_psw.inf_amd64_fafb1d329fdfe2c6
+::if exist %intelswprotect1%\aesm_service.exe do del /s /q %intelswprotect1%\aesm_service.exe
+
+::If you have KillerAnalyticsService (Spyware service from Killer network driver from Rivet Networks) currently running, kill it and ensure it doesnt autostart. Sometimes this doesnt work however.
+::Yes this isnt directly Windows 10 related but many OEM W10 laptops have this driver and its respective packet sniffer running.
+for /F "tokens=3 delims=: " %%H in ('sc query "KillerAnalyticsService" ^| findstr "        STATE"') do (
+    if /I "%%H" EQ "RUNNING" (
+    REM Put your code you want to execute here
+    REM For example, the following line
+    taskkill /f /im KillerAnalyticsService.exe
+    ::Killer's driver itself is often a disguised file, at least in part. watch for "oemXXX" with XXX being numeric. Sometimes only has two digits. My two instances are "oem149.inf" and "oem90.inf"
+    ::Will try to kill autostart of the analytics ONLY without killing internet connection. Luckily this is made simpler due to it being a separate engine.
+    reg add "HKLM\System\CurrentControlSet\Services\Killer Analytics Service" /v "Start" /t REG_DWORD /d 0 /f
+    )
+)
+
+::DISABLING WINDOWS ANTIVIRUS PERMANENTLY (at least until you revert the regkey value to 0, or delete it)
+::I consider this bloat and malware as the user has no ability even to turn it off, it will automatically turn itself back on. Even when it is off, it still performs random tasks and refuses certain tasks.
+::The best anti-malware is common sense. Comment this line out if you still want Windows Defender on.
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender" /v DisableAntiSpyware /t REG_DWORD /d 1 /f
+
+::no need for reversing as these 4 lines have no harm
+::sometimes spyware applications will dump things here. clean it up so it wont be able to revisit the info.
+del /s /q "%windir%\tracing\*"
+::this is meant to be a 'service' that will show the system health of your machine, but something like this DOES NOT need to start on login, you likely didnt even know it existed.
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\SecurityHealth" /f
+::Microsoft is so inconceivably greedy and lustful for data that they've implemented telemtetry in the clipboard. Modern computing horrors beyond by comprehension.
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Clipboard" /v IsClipboardSignalProducingFeatureAvailable /t REG_DWORD /d 0 /f
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Clipboard" /v IsCloudAndHistoryFeatureAvailable /t REG_DWORD /d 0 /f
+::could be catastrophic if super admin acc is used. No permission for Administrators to delete these. Will test in detail soon enough.
+:: del %windir%\DiagTrack
+:: del %windir%\diagnostics
+::ApplicationFrameHost.exe is active whenever one or more Microsoft || Windows Store apps is running. If this instance is cancelled, it should also cause those unspecified apps to close.
+taskkill /f /im ApplicationFrameHost.exe
+::Spyware
+reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Personalization" /v AllowPersonalization /t REG_DWORD /d 0 /f
+::recent doc history is inconsistent (obviously) and clutters up explorer
+reg add "Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoRecentDocsHistory /t REG_DWORD /d 1 /f
+:: reg key responsible for automatically running a scan on your system to upload to microsoft's remote servers
+reg add "Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\ScheduledDiagnostics" /v EnabledExecution /t REG_DWORD /d 0 /f
+:: edge sometimes gets used by default so I'm ensuring it doesnt send certain usage stats
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Edge" /v UsageStatsInSample /t REG_DWORD /d 0 /f
+
+::background processes that do nothing but consume processing power and memory
+taskkill /f /im ShellExperienceHost.exe
+taskkill /f /im SearchApp.exe
+taskkill /f /im SecurityHealthService.exe
+taskkill /f /im SecurityHealthSystray.exe
+
+
 ::DISM commands. I think of DISM as Disk Image System Management, its a tool that will modify a disk image.
 ::option "-Online" means I am targeting a currently running disk image, the one you're running the script on.
 ::This is a proposed solution to the problem of non-removable pre-provisioned packages.
@@ -201,19 +254,33 @@ type ms_telemetry_list.txt >> %SystemRoot%\System32\drivers\etc\hosts
 ::Example:
 ::powershell -Command Remove-WindowsPackage -Online -NoRestart -PackageName "windows.immersivecontrolpanel_10.0.2.1000_neutral_neutral_cw5n1h2txyewy" -Force
 
+::UPDATE: Microsoft has crudely forced this out of relevance due to returning an invalid paramter error when a package with "NonRemovable" set to true is specified. How much lower can they get?
 
-::this could possibly cause a blue screen
-del /s /q "C:\Windows\SystemApps\"
+::20/5/22 best thing I can try to do now is attempt to set NonRemovable values to 0 and then deprovision them in the PS script or try to match permissions
+::src of the following lines: https://www.wintips.org/how-to-access-windowsapps-folder-windows-10-8/#part-2
+::Will not work if the files are encrypted, which is why I suggest removing the bitlocker encryption that comes default w/ Windows
+takeown /F "%ProgramFiles%\WindowsApps"
+takeown /F "%ProgramFiles%\WindowsApps" /r /d y
+icacls "%ProgramFiles%\WindowsApps" /grant Administrators:F
+icacls "%ProgramFiles%\WindowsApps\*" /grant Administrators:F /t
+icacls "%ProgramFiles%\WindowsApps" /setowner "NT Service\TrustedInstaller"
+:: These lines above should give the current user full access and control over the C:\ProgramFiles\WindowsApps folder (where NonRemovable packages are provisioned for all users)
+::Local user provisioned package and win store data files are in C:\Users\%username%\AppData\Local\Packages
+del /s /q "%ProgramFiles%\WindowsApps"
+
+
+
+
 
 ::Only if you have another photo viewer
 ::reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\FilePicker\Config\StartLocation" /v PicturesLibrary /f
-
-powershell -Command "Get-AppXProvisionedPackage -Online | Remove-AppxProvisionedPackage -Online"
+::All packages on the system and their info can be noted with Get-AppxPackage -allusers (in powershell admin mode) or Powershell -Command "Get-AppxPackage -allusers" in cmd admin
+powershell -Command "Get-AppXProvisionedPackage -Online -AllUsers | Remove-AppxProvisionedPackage -Online -AllUsers"
 powershell -Command "Get-AppxPackage -Name *EventProvider* | Remove-AppxPackage -AllUsers"
 powershell -Command "Delete-DeliveryOptimizationCache" -Force
 powershell -Command "Disable-AppBackgroundTaskDiagnosticLog"
 powershell -Command "Disable-WindowsErrorReporting"
-powershell -Command "Get-AppxPackage -Name *Microsoft-WindowsPhone* | Remove-AppxPackage -AllUsers"
+::powershell -Command "Get-AppxPackage -Name *Microsoft-WindowsPhone* | Remove-AppxPackage -AllUsers"
 
 
 
@@ -332,8 +399,8 @@ PowerShell -Command "Get-AppxPackage *SkypeApp* | Remove-AppxPackage"
 PowerShell -Command "Get-AppxPackage *solit* | Remove-AppxPackage"
 PowerShell -Command "Get-AppxPackage *WindowsSoundRecorder* | Remove-AppxPackage"
 
-:: XboxGameCallableUI can no longer be removed this way.
-PowerShell -Command "Get-AppxPackage *xbox* | Remove-AppxPackage"
+:: XboxGameCallableUI can no longer be removed this way. Slows execution massively when this error crops up.
+::PowerShell -Command "Get-AppxPackage *xbox* | Remove-AppxPackage"
 
 PowerShell -Command "Get-AppxPackage *windowscommunicationsapps* | Remove-AppxPackage"
 PowerShell -Command "Get-AppxPackage *WindowsMaps* | Remove-AppxPackage"
@@ -362,16 +429,16 @@ rd "%PROGRAMDATA%\Microsoft OneDrive" /Q /S >NUL 2>&1
 reg add "HKEY_CLASSES_ROOT\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}\ShellFolder" /f /v Attributes /t REG_DWORD /d 0 >NUL 2>&1
 reg add "HKEY_CLASSES_ROOT\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}\ShellFolder" /f /v Attributes /t REG_DWORD /d 0 >NUL 2>&1
 echo OneDrive has been removed. Windows Explorer needs to be restarted.
-del %userprofile%\Desktop\OneDriveBackupFiles
+::backslash needed in the former part so the "if exist" knows the input is a directory
+if exist %userprofile%\Desktop\OneDriveBackupFiles\ do del /s /q %userprofile%\Desktop\OneDriveBackupFiles
 pause
 start /wait TASKKILL /F /IM explorer.exe
 start explorer.exe
 REM src end
 
 
-::Cortana removal mechanism here might cause breaks, comment if problems arise in the forked script
-::if not exist RemoveW10Bloat.bat (curl https://raw.githubusercontent.com/InquireWithin/Win.10-SpyWare-Bloat-Telemetry-Remove-Fork/master/RemoveW10Bloat.bat > RemoveW10Bloat.bat)
-:: Implement my forked version of w10debloater here
+
+:: Implement my modified version of w10debloater here
 if not exist Windows10Debloater.ps1 (
 curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/Windows10Debloater.ps1 > Windows10Debloater.ps1
 )
