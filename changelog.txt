@@ -1,26 +1,31 @@
 Changes prior to 30/4/22 are undocumented
 First created 13/4/22
 
-Working on (as of 2/5/22)
+Working on (as of 20/5/22)
 more 'stable' execution
 Service digging
 reg key digging
 sch tasks digging
 reversal script
-non-cluttered "documentation"
-a better and more concise readme and changelog
-any exception handling whatsoever
 remove more conflicting lines of code in 3rd party scripts
 logfile (either by default or command line argument)
 integrate cmd_server_list.bat into ms_telemetry_list.txt
 try calling the req'd files (except the telemetry list) synchronously via '&'
 add command line args for silent,verbose, logging, gutjob, autorun
-change all 'bat' files to 'cmd'
-remove alch fork
-remove "press any key to continue" after w10 debloater ps1 finishes (might be OS default)
+FIX command line argument problem
+ensure service can run and with system permissions (otherwise try to start the service as a powershell file)
+
+* 20/5/22 [2.3 mostlystable]
+"indiana jones" marble swaps on the systemapp provisioned packages w/ respective taskkills prior so processes cant launch again from there
+lots of more low hanging spyware removed
+couple of "guards" in place
+KillerNetwork spyware engine removed
+discontinued usage of the forked W10Debloater file (for now) (W10Debloater.ps1) due to incompatibility and bugs caused by subsequent windows updates
+cleared local package cache
 Microsoft\Windows\SettingSync\BackgroundUploadTask  <- remove this w/ a bit change, couldnt find original forum post where the reg file to do this is
-
-
+removed invalid requests resulting in an error that slowed execution by >2 seconds
+optimizations
+updated readme for new additions, most notably added section "Limitations"
 
 18/5/22 [2.21 semistable]
 no longer any need for user input except for explorer restart
@@ -34,7 +39,6 @@ W10Debloater.ps1 has self-elevation now
 cleaned up user input interface that was taking up space
 cleaned some commenting
 removed a couple conflicting statements
-
 
 17/5/22 ["2.1" SEMISTABLE]
 added UAC prompt if script is launched without admin
