@@ -26,6 +26,7 @@ Microsoft\Windows\SettingSync\BackgroundUploadTask  <- remove this w/ a bit chan
 removed invalid requests resulting in an error that slowed execution by >2 seconds
 optimizations
 updated readme for new additions, most notably added section "Limitations"
+startup is now a delayed-auto service instead of tied to the regkey, this likely wont work though as batch files havent been known to be compatible with microsoft's "modern" service manager
 
 18/5/22 [2.21 semistable]
 no longer any need for user input except for explorer restart
