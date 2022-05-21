@@ -1,4 +1,7 @@
 
+#NOT IN USE AT THE MOMENT DUE TO BEING SOMEWHAT DATED AND INCOMPATIBLE + A COUPLE BUGS. I LEAVE IT HERE REGARDLESS IN CASE ANYONE WHATS TO UNCOMMENT EVERYTHING AND RUN IT SEPERATELY
+
+
 #This script was assembled by mashing together all of the individual scripts of Sycrex's Windows10Debloater (https://github.com/Sycnex/Windows10Debloater)
 #I further edited it and trimmed it down based on what I've already had in the main script, but I left the contents commented so anyone could just regain the functionality by uncommenting
 # not needed due to the context this was called in Set-ExecutionPolicy Unrestricted -Force
@@ -11,7 +14,7 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
   Exit
  }
 }
-
+#WIP
 #I also added DISM commands related to package removal
 #some of these are found in C:\Windows\SystemApps
 [System.Collections.ArrayList]$packages = @(
@@ -36,11 +39,11 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 "Microsoft.Windows.NarratorQuickStart_10.0.19041.1023_neutral_neutral_8wekyb3d8bbwe"
 "Microsoft.LockApp_10.0.19041.1023_neutral__cw5n1h2txyewy"
 "F46D4000-FD22-4DB4-AC8E-4E1DDDE828FE_10.0.19041.1023_neutral_neutral_cw5n1h2txyewy"
-#Microsoft.XboxGameCallableUI_1000.19041.1023.0_neutral_neutral_cw5n1h2txye
+"Microsoft.XboxGameCallableUI_1000.19041.1023.0_neutral_neutral_cw5n1h2txye"
 "Microsoft.XboxGameCallableUI_1000_neutral_neutral_cw5n1h2txy"
 #C:\Windows\SystemApps\
 "Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy"
-#Microsoft.Windows.StartMenuExperienceHost_10.0.19041.1023_neutral_neutral_cw5n1h2txyewy
+"Microsoft.Windows.StartMenuExperienceHost_10.0.19041.1023_neutral_neutral_cw5n1h2txyewy"
 #C:\Windows\SystemApps\
 "Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy"
 "Microsoft.AsyncTextService_10.0.19041.1023_neutral__8wekyb3d8bbwe"
@@ -48,9 +51,8 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 )
 
 foreach ($package in $packages) {
-	Remove-AppXProvisionedPackage -Online -PackageName $package
+	Remove-AppxProvisionedPackage -Online -PackageName $package
 }
-
 
 
 
