@@ -14,8 +14,11 @@ try calling the req'd files (except the telemetry list) synchronously via '&'
 add command line args for silent,verbose, logging, gutjob, autorun
 FIX command line argument problem
 ensure service can run and with system permissions (otherwise try to start the service as a powershell file)
+25/5/22 [v2.4.1.1-STABLE]
+- removed forked W10Debloater ps1 script from repo
+- removed code block in main bat file that would handle the ps1 script call
 
-25/5/22 [v2.4.1 STABLE]
+25/5/22 [v2.4.1-STABLE]
 - Removed pointless service creation (batch files can no longer be ran as services)
 + Hopefully fixed disabling of Windows Defender
 + Fixed curl request for the hosts file
