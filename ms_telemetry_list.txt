@@ -545,3 +545,15 @@
 0.0.0.0 onedriveclucproddm20028.blob.core.windows.net
 0.0.0.0 onedriveclucproddm20029.blob.core.windows.net
 0.0.0.0 onedriveclucproddm20030.blob.core.windows.net
+0.0.0.0 self.events.data.microsoft.com
+0.0.0.0 fe2.update.microsoft.com
+0.0.0.0 fg.downlad.windowsupdate.com.c.footprint.net
+0.0.0.0 aka.ms
+0.0.0.0 go.microsoft.com
+0.0.0.0 az667904.vo.msecnd.net
+0.0.0.0 az700632.vo.msecnd.net
+0.0.0.0 az764295.vo.msecnd.net
+0.0.0.0 default.exp-tas.com
+0.0.0.0 fs.microsoft.com
+0.0.0.0 geo.prod.do.dsp.mp.microsoft.com
+0.0.0.0 download.windowsupdate.com
