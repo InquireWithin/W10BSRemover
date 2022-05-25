@@ -1,24 +1,27 @@
-:: 14/4/22 LB
+:: 14/4/22 LB orig date of creation
 
+:: The best reversal methods are as follows (cmd commands in admin mode, execute separately)
+:: sfc /scannow
+:: DISM.exe /Online /Cleanup-image /Scanhealth
+:: DISM.exe /Online /Cleanup-image /Restorehealth
+
+::DO NOT USE if you MUST have Microsoft Office products on your system (can be easily substituted w/ libreoffice)
+
+::I HIGHLY RECOMMEND that if you run this script, you use Ethernet regularly, this minimizes variance (for reasons unknown to me still)
 ::If this file was flagged a security risk, know that this is why: https://www.bleepingcomputer.com/news/microsoft/windows-10-hosts-file-blocking-telemetry-is-now-flagged-as-a-risk/
 
-::NOTE: This script ASSUMES your registry key:
-::HKEY_LOCAL_MACHINES\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\DataBasePath
-::is set to
-::%SystemRoot%\System32\drivers\etc
-::the file that will be edited is %SystemRoot%\System32\drivers\etc
-::by default %SystemRoot% is C:\Windows
+::NOTE: This script ASSUMES your registry key: HKEY_LOCAL_MACHINES\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\DataBasePath is set to %SystemRoot%\System32\drivers\etc
 
 ::There is also a proprietary software option for this (OOSU10) that ofc I can't include b/c proprietary.
 ::Implement DWS (Destroy Windows 10 Spying) if possible. If not, use manually from here (https://github.com/spinda/Destroy-Windows-10-Spying) <- Forked version
 :: If I do, include the apache license alongside it (https://www.apache.org/licenses/LICENSE-2.0) as it is licensed under Apache.
 :: The original repo for DWS was deleted, and most forks are read only archives now. 
 :: Another fork (https://github.com/Wohlstand/Destroy-Windows-10-Spying)
+::A good script is also Windows 10 Decrapifier, first made for 17xx builds, author claims its still functioning for 20xx
 
 ::Another option instead of going through this confusing rigamarole is using Windows 10 Enterprise LTSB. Though I don't know if AutoKMS or W10DigitalActivator work on it.
 
 ::Recommendations that I wont/cant script here that will stengthen your control in the war against the operating system and/or its components.
-::create a "super admin" account so you can maximize control over what you do with your system and what runs on it.
 ::If you use a microsoft acc to sign in, change to a local account
 ::Request data deletions locally via settings (probably in account privacy or protection), and from the microsoft account panel via browser if you were/are using MS account to log on
 ::Download Process Explorer, and replace taskmanager with it. (launch any instance of it, or the native task manager with: super + r -> "taskmgr" -> enter)
@@ -27,15 +30,18 @@
 ::Turn off internet connection whenever you dont actively need it or wont be using it for the next twenty or so minutes at least
 ::Remove automatic internet connection on launch, this may be only an option via your network engine, it will also help w/ above
 ::Make sure to check services.msc for some other problematic services (like KillerAnalyticsService for users w/ Killer network drivers)
-::If you have javs on your system, reduce some bandwith by killing (and preventing from starting up on login) the services: jucheck.exe and jusched.exe
+::If you have Java on your system, reduce some bandwith by killing (and preventing from starting up on login) the services: jucheck.exe and jusched.exe
 ::Use the ublock origin domain blocker list, it can be found in the "resources" repo of my github @ https://github.com/InquireWithin/resources/blob/main/ublock_adblock_server_filter.txt
 :: ^ copy and paste this into your hosts file (C:\Windows\System32\drivers\etc\hosts) and save. Some websites will say you have an adblocker though, so you can save a backup of the hosts file, clear the hosts file, do whatever, then put the addresses back
-::I cant write any code that would globally stop applications from stealing focus without your permission or content, which renders >1 monitor setups useless.
+::I cant write any code that would globally stop applications from stealing focus without your permission or content, which renders >1 monitor setups somewhat useless.
 ::Microsoft refuses to fix this. The best you can do is use tools like autoruns to find the offender, and kill/delete/configure the software.
 ::use an older ISO image, self explanatory. You won't get it from Microsoft so don't go looking there.
 ::Remove bitlocker encryption. Don't just delete random files it relies on though, you want to properly uninstall this one or your files might be locked up forever. This schema prevents you from accessing certain system folders or elements.
 ::RUN THIS BEFORE A NEW USER ACCOUNT IS CREATED, and DISM an iso before it is live to deprovision packages.
 ::If you bought a laptop or a prebuilt desktop from any OEM (Dell, Hp, lenovo, asus, etc) and you did NOT reinstall the OS, do so, because the OEM has system level spyware as well and I don't want to cover that here.
+::Use Ethernet whenever possible
+::If you still have a legacy BIOS motherboard, treasure it. UEFI sucks.
+::DISCONNECT ethernet during startup to prevent some system reversions and auto-updates to os components
 @echo off
 
 ::SELF ELEVATION SEQUENCE (UAC PROMPT)
@@ -117,6 +123,7 @@ set /A LOGV=0
 set /A STARTUP=0
 ::there was another var set here
 ::if command line argument 1 or 2 is "-l" "-s" do as follows (-l is log the output, -s is run this script at startup)
+::there is a nasty bug with this which, for whatever reason, always causes startup to equal 1 when it should be 0. It is probably expansion related.
 if /i "%~1" == "-l" set /A LOGV=1
 if /i "%~2" == "-l" set /A LOGV=2
 
@@ -155,11 +162,19 @@ goto log
 
 ::"main" function
 :one
+::for users that were using a microsoft account and switched to local later (i recommend this if you are using ms account for login) and the new username is different
+::manually change this if needed or the situation above applies to you
+set trueuser=%username%
+
+
+echo %trueuser%
+echo %username%
 echo %LOGV%
 echo %STARTUP%
 echo %~dp0
 echo %~nx0
 echo %~0
+
 ::Back up and flush current hosts file and start
 type %SystemRoot%\System32\drivers\etc\hosts > %SystemRoot%\System32\drivers\etc\hosts-BACKUP
 ::back up the windows store access control lists, stored in %SystemRoot%\System32
@@ -185,10 +200,42 @@ sc delete wisvc
 ::the fact that theyve implemented spyware and massive bloat (cortana) into a literal search bar is beyond me.
 ::Don't worry though, the taskbar looks far better without it, and it can still be accessed via super + s
 sc delete WSearch
+::I think this is another update svc
+sc delete wuauserv
+::win defender
+sc delete WinDefend
+sc delete WdNisSvc
+::diags and telephony
+sc delete WdiServiceHost
+::sc delete W32Time && sc delete TimeBrokerSvc <- if you're more paranoid than me, uncomment
+sc delete TapiSrv
+sc delete SecurityHealthService
+sc stop DoSvc && sc delete DoSvc
+sc stop DeviceAssociationService && sc delete DeviceAssociationService
+sc stop ClickToRunSvc && sc delete ClickToRunSvc
+sc delete OneSyncSvc
+sc stop diagnosticshub.standardcollector.service
+sc stop WMPNetworkSvc
+sc config DiagTrack start= disabled
+sc config diagnosticshub.standardcollector.service start= disabled
+sc config dmwappushservice start= disabled
+sc config RemoteRegistry start= disabled
+sc config TrkWks start= disabled
+sc config WMPNetworkSvc start= disabled
+sc config WSearch start= disabled
+sc config SysMain start= disabled
 
-::open autorun soon and check all the different automatically configured services and remove the spyware-oriented ones
+::uncomment if unneeded. NOTE THAT I DIDNT TEST WHAT OCCURS WHEN REMOVING THESE
+::TermService, UmRdpService, and SessionEnv is for remote desktop. DusmSvc is for metered networks (mostly), DPS is diagnostic policy service.
+::sc delete TabletInputService && sc delete TermService && sc delete UmRdpService && sc delete DPS && sc delete DusmSvc
+::if you DO NOT need bluetooth:
+::sc delete BTAGService && && sc stop BthAvctpService && sc delete BthAvctpService && sc stop bthserv && sc delete bthserv
+::if you DO NOT EVER need to print anything
+::sc stop Spooler && sc delete Spooler
+
 
 ::route these selected spyware servers to 0.0.0.0 in routing table (can not be accessed)
+::some are here b/c there is internal logic to discard certain entries of the hosts file
 route ADD 131.253.14.0 MASK 255.255.255.0 0.0.0.0
 route ADD 65.52.100.0 MASK 255.255.255.0 0.0.0.0
 route ADD 65.4.54.0 MASK 255.255.255.0 0.0.0.0
@@ -196,28 +243,18 @@ route ADD 65.55.194.0 MASK 255.255.255.0 0.0.0.0
 route ADD 93.184.215.0 MASK 255.255.255.0 0.0.0.0
 route ADD 134.170.115.0 MASK 255.255.255.0 0.0.0.0
 route ADD 65.55.252.0 MASK 255.255.255.0 0.0.0.0
+route ADD 8.252.232.254 MASK 255.255.255.0 0.0.0.0
+route ADD 104.44.43.105 MASK 255.255.255.0 0.0.0.0
+route ADD 104.44.33.203 MASK 255.255.255.0 0.0.0.0
+route ADD 104.44.17.201 MASK 255.255.255.0 0.0.0.0
+route ADD 104.44.29.47 MASK 255.255.255.0 0.0.0.0
+route ADD 104.44.17.163 MASK 255.255.255.0 0.0.0.0
+route ADD 104.44.22.198 MASK 255.255.255.0 0.0.0.0
 
+cd %~dp0
 REM More servers found to be ms telemetry posted on my github. I originally found these either by RevEng tools and scattered across the internet. I just formatted them and gave them the prefix "0.0.0.0 "
 if not exist ms_telemetry_list.txt (curl https://github.com/InquireWithin/W10BSRemover/blob/main/ms_telemetry_list.txt > ms_telemetry_list.txt)
 type ms_telemetry_list.txt > %SystemRoot%\System32\drivers\etc\hosts
-
-
-::Intel has a service specifically to act as a "guard" for other software. This is just a way to protect bloated applications runstate. commented until tested, there are more dirs w/ this svc exec in them in the parent dir
-::set intelswprotect1 = C:\Windows\System32\DriverStore\FileRepository\sgx_psw.inf_amd64_fafb1d329fdfe2c6
-::if exist %intelswprotect1%\aesm_service.exe do del /s /q %intelswprotect1%\aesm_service.exe
-
-::If you have KillerAnalyticsService (Spyware service from Killer network driver from Rivet Networks) currently running, kill it and ensure it doesnt autostart. Sometimes this doesnt work however.
-::Yes this isnt directly Windows 10 related but many OEM W10 laptops have this driver and its respective packet sniffer running.
-if exist C:\Windows\System32\drivers\RivetNetworks\Killer\KillerNetworkService.exe do (
-taskkill /f /im KillerAnalyticsService.exe
-::Killer's driver itself is often a disguised file, at least in part. watch for "oemXXX" with XXX being numeric. Sometimes only has two digits. My two instances are "oem149.inf" and "oem90.inf"
-::Will try to kill autostart of the analytics ONLY without killing internet connection. Luckily this is made simpler due to it being a separate engine.
-reg add "HKLM\System\CurrentControlSet\Services\Killer Analytics Service" /v "Start" /t REG_DWORD /d 0 /f
-:: above line uncommented b/c below line does not always complete the task
-del /s /q "C:\Program Files\Killer Networking\Killer Control Center\KillerAnalyticsService.exe"
-)
-    
-
 
 ::DISABLING WINDOWS ANTIVIRUS PERMANENTLY (at least until you revert the regkey value to 0, or delete it)
 ::I consider this bloat and malware as the user has no ability even to turn it off, it will automatically turn itself back on. Even when it is off, it still performs random tasks and refuses certain tasks.
@@ -226,7 +263,7 @@ reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender" /v Dis
 
 ::no need for reversing as these 4 lines have no harm
 ::sometimes spyware applications will dump things here. clean it up so it wont be able to revisit the info.
-del /s /q "%windir%\tracing\*"
+::del /s /q "%windir%\tracing\*"
 ::this is meant to be a 'service' that will show the system health of your machine, but something like this DOES NOT need to start on login, you likely didnt even know it existed.
 reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\SecurityHealth" /f
 ::Microsoft is so inconceivably greedy and lustful for data that they've implemented telemtetry in the clipboard. Modern computing horrors beyond by comprehension.
@@ -240,11 +277,35 @@ reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Personaliz
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoRecentDocsHistory /t REG_DWORD /d 1 /f
 :: reg key responsible for automatically running a scan on your system to upload to microsoft's remote servers
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\ScheduledDiagnostics" /v EnabledExecution /t REG_DWORD /d 0 /f
-:: edge sometimes gets used by default so I'm ensuring it doesnt send certain usage stats
+:: edge sometimes gets used by default (even in cURL (curl) command) so I'm ensuring it doesnt send certain usage stats
 reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Edge" /v UsageStatsInSample /t REG_DWORD /d 0 /f
 ::shouldnt make a difference anyway but if start menu returns, it'll help
 reg add HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\SVDEn /v PromoteOEMTiles /t REG_DWORD /d 0 /f
 
+if exist "C:\Program Files\Common Files\microsoft shared\ClickToRun\OfficeClickToRun.exe" (
+taskkill /f /im OfficeClickToRun.exe
+::delete the program FIRST before the rest of the files for the best chance at beating the process respawn timer
+del /s /q "C:\Program Files\Common Files\microsoft shared\ClickToRun\OfficeClickToRun.exe"
+rmdir /s /q "C:\Program Files\Common Files\microsoft shared\ClickToRun"
+::I do this despite deleting it above b/c I don't want windows to even *try* to start it up. This is a common theme across the script. It may *seem* like bloat but the contrary is true.
+::It is also due to the fact that the program itself may come back or fail to delete. In this case, there is a safety net.
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ClickToRunSvc" /v "Start" /t REG_DWORD /d 0 /f
+)
+::if you need to open the word application again at some point, comment this. (In reality you should just be using LibreOffice b/c its free software and does the exact same things as office)
+rmdir /s /q "C:\Program Files\Common Files\microsoft shared\OFFICE16"
+::if you dont need ms teams
+::rmdir /s /q "C:\Program Files\Common Files\microsoft shared\Team Foundation Server"
+
+::if you dont care about printing of xml/xps files
+taskkill /f /im printfilterpipelinesvc.exe
+
+::if you must use ms edge at some point, you should comment the following lines, as I wont test whether this breaks edge or not.
+if exist "C:\Users\%trueuser%\AppData\Local\Microsoft\Edge\User Data\" (
+cd /d "C:\Users\%trueuser%\AppData\Local\Microsoft\Edge\User Data"
+::for /F "delims=" %%i in ('dir /b') do (rmdir "%%i" /s /q || del "%%i" /s /q)
+del /s /q *.*
+cd %~dp0
+)
 
 ::DISM commands. I think of DISM as Disk Image System Management, its a tool that will modify a disk image.
 ::option "-Online" means I am targeting a currently running disk image, the one you're running the script on.
@@ -265,17 +326,37 @@ takeown /F "%ProgramFiles%\WindowsApps" /r /d y
 icacls "%ProgramFiles%\WindowsApps" /grant Administrators:F
 icacls "%ProgramFiles%\WindowsApps\*" /grant Administrators:F /t
 icacls "%ProgramFiles%\WindowsApps" /setowner "NT Service\TrustedInstaller"
+::rmdir /s /q "%ProgramFiles%\WindowsApps"
 :: These lines above should give the current user full access and control over the C:\ProgramFiles\WindowsApps folder (where NonRemovable packages are provisioned for all users)
 ::Local user provisioned package and win store data files are in C:\Users\%username%\AppData\Local\Packages
-del /s /q "%ProgramFiles%\WindowsApps"
 
-::leave uncommented if running as a normal user or admin privleges from regular user account
-del /s /q "C:\Users\%username%\AppData\Local\Packages\*"
-del /s /q "C:\Users\%username%\AppData\Local\Package Cache\*"
-del /s /q "C:\Users\%username%\AppData\Local\OneDrive"
-del /s /q "C:\Users\%username%\AppData\Local\GameAnalytics"
+::only deletes locally, not system wide
+::del /s /q "C:\Users\%trueuser%\AppData\Local\Packages\*"
+::del /s /q "C:\Users\%trueuser%\AppData\Local\Package Cache\*"
+del /s /q "C:\Users\%trueuser%\AppData\Local\OneDrive"
+del /s /q "C:\Users\%trueuser%\AppData\Local\GameAnalytics"
+
+::delete live kernel log(s), freed up 1.51 GB for me
+if exist "C:\Windows\LiveKernelReports\" (
+cd /d C:\Windows\LiveKernelReports
+del /s /q *.dmp
 rd /s /q %systemdrive%\$Recycle.bin
+cd %~dp0
+)
+::firewall rules to hopefully prevent some specific applications from ever sending spyware data if other containment methods fail
+::TIL the only reason "Control Panel" was replaced by "Settings" was to implement telemetry in it. Wonderful.
+::protocol = any by default
+netsh.exe advfirewall firewall add rule name="ICP" program="C:\Windows\ImmersiveControlPanel\SystemSettings.exe" dir=out enable=yes action=block profile=any
+netsh.exe advfirewall firewall add rule name="AADBroker" program="C:\Windows\SystemApps\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy\Microsoft.AAD.BrokerPlugin.exe" dir=out enable=yes action=block profile=any
+netsh.exe advfirewall firewall add rule name="ATS" program="C:\Windows\SystemApps\Microsoft.AsyncTextService_8wekyb3d8bbwe\Microsoft.AsyncTextService.exe" dir=out enable=yes action=block profile=any
+netsh.exe advfirewall firewall add rule name="BEH" program="C:\Windows\SystemApps\Microsoft.BioEnrollment_cw5n1h2txyewy\BioEnrollmentHost.exe" dir=out enable=yes action=block profile=any
+netsh.exe advfirewall firewall add rule name="EC" program="C:\Windows\SystemApps\Microsoft.ECApp_8wekyb3d8bbwe\Microsoft.ECApp.exe" dir=out enable=yes action=block profile=any
+netsh.exe advfirewall firewall add rule name="ASF" program="C:\Windows\SystemApps\Microsoft.Windows.AddSuggestedFoldersToLibraryDialog_cw5n1h2txyewy\AddSuggestedFoldersToLibraryDialog.exe" dir=out enable=yes action=block profile=any
+netsh.exe advfirewall firewall add rule name="FE" program="C:\Windows\SystemApps\Microsoft.Windows.FileExplorer_cw5n1h2txyewy\FileExplorer.exe" dir=out enable=yes action=block profile=any
+:: format: netsh.exe advfirewall firewall add rule name="" program="" dir=out enable=yes action=block profile=any
 
+::rename this file so that the reg key accessing it for configuration information is lost. Best practice is to delete that regkey as well.
+move "C:\Windows\SystemApps\Microsoft.Windows.CloudExperienceHost_cw5n1h2txyewy\default.html" "C:\Windows\SystemApps\Microsoft.Windows.CloudExperienceHost_cw5n1h2txyewy\RemovedBS.html"
 
 ::Only if you have another photo viewer
 ::reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\FilePicker\Config\StartLocation" /v PicturesLibrary /f
@@ -285,37 +366,22 @@ powershell -Command "Get-AppxPackage -Name *EventProvider* | Remove-AppxPackage 
 powershell -Command "Delete-DeliveryOptimizationCache" -Force
 powershell -Command "Disable-AppBackgroundTaskDiagnosticLog"
 powershell -Command "Disable-WindowsErrorReporting"
-::powershell -Command "Get-AppxPackage -Name *Microsoft-WindowsPhone* | Remove-AppxPackage -AllUsers"
+powershell -Command "Get-AppxPackage -Name *Microsoft-WindowsPhone* | Remove-AppxPackage -AllUsers"
+:: fix to the ms-gamingoverlay issue (turning off gamebar)
+powershell -Command "get-appxpackage *Microsoft.XboxGamingOverlay* | remove-appxpackage"
+powershell -Command "get-appxpackage *Microsoft.XboxGameOverlay* | remove-appxpackage
 
 
 
+REM orig src: https://www.hwinfo.com/misc/RemoveW10Bloat.htm most of the following lines came from here. I tweaked/edited some, and removed the deprecated lines.
 
-REM orig src: https://www.hwinfo.com/misc/RemoveW10Bloat.htm most of the following lines came from here
-sc stop diagnosticshub.standardcollector.service
-sc stop WMPNetworkSvc
-
-sc config DiagTrack start= disabled
-sc config diagnosticshub.standardcollector.service start= disabled
-sc config dmwappushservice start= disabled
-sc config RemoteRegistry start= disabled
-sc config TrkWks start= disabled
-sc config WMPNetworkSvc start= disabled
-sc config WSearch start= disabled
-sc config SysMain start= disabled
 
 REM *** SCHEDULED TASKS tweaks ***
-schtasks /Change /TN "Microsoft\Windows\AppID\SmartScreenSpecific" /Disable
 schtasks /Change /TN "Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser" /Disable
 schtasks /Change /TN "Microsoft\Windows\Application Experience\ProgramDataUpdater" /Disable
 schtasks /Change /TN "Microsoft\Windows\Application Experience\StartupAppTask" /Disable
 schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\Consolidator" /Disable
-schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\KernelCeipTask" /Disable
 schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\UsbCeip" /Disable
-schtasks /Change /TN "Microsoft\Windows\Customer Experience Improvement Program\Uploader" /Disable
-schtasks /Change /TN "Microsoft\Windows\Shell\FamilySafetyUpload" /Disable
-schtasks /Change /TN "Microsoft\Office\OfficeTelemetryAgentLogOn" /Disable
-schtasks /Change /TN "Microsoft\Office\OfficeTelemetryAgentFallBack" /Disable
-schtasks /Change /TN "Microsoft\Office\Office 15 Subscription Heartbeat" /Disable
 
 ::Optional and more 'arcane' removals, originally commented out in source script.
 schtasks /Change /TN "Microsoft\Windows\Autochk\Proxy" /Disable
@@ -331,66 +397,64 @@ schtasks /Change /TN "Microsoft\Windows\Time Synchronization\SynchronizeTime" /D
 schtasks /Change /TN "Microsoft\Windows\Windows Error Reporting\QueueReporting" /Disable
 schtasks /Change /TN "Microsoft\Windows\WindowsUpdate\Automatic App Update" /Disable
 
-REM *** Remove Cortana ***
-REM Currently MS doesn't allow to uninstall Cortana using the above step claiming it's a required OS component (hah!)
-REM We will have to rename the Cortana App folder (add ".bak" to its name), but this can be done only if Cortana is not running.
-REM The issue is that when Cortana process (SearchUI) is killed, it respawns very quickly
-REM So the following code needs to be quick (and it is) so we can manage to rename the folder
-REM Disabling Cortana this way on Version 1703 (RS2) will render all items in the Start Menu unavailable.
-REM I uncommented this regardless.
-taskkill /F /IM SearchUI.exe
-set winapps = %windir%\SystemApps
-move "%windir%\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy" "%windir%\SystemApps\Microsoft.Windows.Cortana_cw5n1h2txyewy.bak"
-:: The line above is a great workaround done at the link from src, I'll have some more attempts at it
-move "%windir%\SystemApps\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy" "%windir%\SystemApps\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy.bak"
-::background processes that do nothing but consume processing power and memory
+
+
+::the following are (mostly) background processes that do nothing but consume processing power and memory
 ::consider the same for the WindowsApps folder (%programfiles%\WindowsApps)
 ::https://www.tenforums.com/software-apps/158524-system-apps-list-purpose.html thread involving something similar to what i'm doing here
 
 ::backup for if the prior method of removing these didnt work (most likely will not unless you're on an older ISO)
-if exist %ProgramFiles%\WindowsApps\ do (
+:: The best way to do this is actually to do these manually in explorer or in their own script, which have a higher degree of consistency. There's also a couple of odd bugs associated w/ these
+::i have a feeling that ren is nanoseconds faster and I need all the speed I can get for the first few lines. Ive tested move, but not ren, thats why i used move.
+::for best results, run these in a separate batch file. Though be careful! These ren and move operations can cause some breakage!
+::the purpose of this is to prevent the programs from even running, and as a safety net for potential internal code to override firewall rules
+goto next
+
+::these commands are highly dangerous, skipping by default
+set winapps = %windir%\SystemApps
+
+move "%windir%\SystemApps\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy" "%windir%\SystemApps\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy.bak"
 taskkill /f /im ShellExperienceHost.exe
 move C:\Windows\SystemApps\ShellExperienceHost_cw5n1h2txyewy C:\Windows\SystemApps\ShellExperienceHost_cw5n1h2txyewy.bak
 
 taskkill /f /im SearchApp.exe
-move C:\Windows\SystemApps\Microsoft.Windows.Search_cw5n1h2txyewy
+move C:\Windows\SystemApps\Microsoft.Windows.Search_cw5n1h2txyewy C:\Windows\SystemApps\Microsoft.Windows.Search_cw5n1h2txyewy.bak
 
 taskkill /f /im SecurityHealthService.exe
 taskkill /f /im SecurityHealthSystray.exe
 move C:\Windows\SystemApps\Microsoft.Windows.SecHealthUI_cw5n1h2txyewy C:\Windows\SystemApps\Microsoft.Windows.SecHealthUI_cw5n1h2txyewy.bak
 
-
 move %winapps%\Microsoft.LockApp_cw5n1h2txyewy %winapps%\Microsoft.LockApp_cw5n1h2txyewy.bak
 move %winapps%\Microsoft.AsyncTextService_8wekyb3d8bbwe %winapps%\Microsoft.AsyncTextService_8wekyb3d8bbwe.bak
 move %winapps%\Microsoft.BioEnrollment_cw5n1h2txyewy %winapps%\Microsoft.BioEnrollment_cw5n1h2txyewy.bak
-move %winapps%\microsoft.creddialoghost_cw5n1h2txyewy %winapps%\microsoft.creddialoghost_cw5n1h2txyewy.bak
+::move %winapps%\microsoft.creddialoghost_cw5n1h2txyewy %winapps%\microsoft.creddialoghost_cw5n1h2txyewy.bak
+::eye control
 move %winapps%\Microsoft.ECApp_8wekyb3d8bbwe %winapps%\Microsoft.ECApp_8wekyb3d8bbwe.bak
-move %winapps%\Microsoft.MicrosoftEdge_8wekyb3d8bbwe %winapps%\Microsoft.MicrosoftEdge_8wekyb3d8bbwe.bak
+
+::move %winapps%\Microsoft.MicrosoftEdge_8wekyb3d8bbwe %winapps%\Microsoft.MicrosoftEdge_8wekyb3d8bbwe.bak
 move %winapps%\Microsoft.MicrosoftEdgeDevToolsClient_8wekyb3d8bbwe %winapps%\Microsoft.MicrosoftEdgeDevToolsClient_8wekyb3d8bbwe.bak
 move %winapps%\Microsoft.Win32WebViewHost_cw5n1h2txyewy %winapps%\Microsoft.Win32WebViewHost_cw5n1h2txyewy.bak
 move %winapps%\Microsoft.Windows.AddSuggestedFoldersToLibraryDialog_cw5n1h2txyewy %winapps%\Microsoft.Windows.AddSuggestedFoldersToLibraryDialog_cw5n1h2txyewy.bak
-move %winapps%\Microsoft.Windows.AppRep.ChxApp_cw5n1h2txyewy %winapps%\Microsoft.Windows.AppRep.ChxApp_cw5n1h2txyewy.bak
-move %winapps%\Microsoft.Windows.AppResolverUX_cw5n1h2txyewy %winapps%\Microsoft.Windows.AppResolverUX_cw5n1h2txyewy.bak
+::move %winapps%\Microsoft.Windows.AppRep.ChxApp_cw5n1h2txyewy %winapps%\Microsoft.Windows.AppRep.ChxApp_cw5n1h2txyewy.bak
+::move %winapps%\Microsoft.Windows.AppResolverUX_cw5n1h2txyewy %winapps%\Microsoft.Windows.AppResolverUX_cw5n1h2txyewy.bak
 move %winapps%\Microsoft.Windows.CallingShellApp_cw5n1h2txyewy %winapps%\Microsoft.Windows.CallingShellApp_cw5n1h2txyewy.bak
-move %winapps%\Microsoft.Windows.CapturePicker_cw5n1h2txyewy %winapps%\Microsoft.Windows.CapturePicker_cw5n1h2txyewy.bak
 move %winapps%\Microsoft.Windows.CloudExperienceHost_cw5n1h2txyewy %winapps%\Microsoft.Windows.CloudExperienceHost_cw5n1h2txyewy.bak
 move %winapps%\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy %winapps%\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy.bak
-::shouldnt be needed due to explorer.exe already existing
-move %winapps%\Microsoft.Windows.FileExplorer_cw5n1h2txyewy %winapps%\Microsoft.Windows.FileExplorer_cw5n1h2txyewy.bak
+::shouldnt be needed due to explorer.exe already existing, might have to kill explorer.exe first
+::move %winapps%\Microsoft.Windows.FileExplorer_cw5n1h2txyewy %winapps%\Microsoft.Windows.FileExplorer_cw5n1h2txyewy.bak
 move %winapps%\microsoft.windows.narratorquickstart_8wekyb3d8bbwe %winapps%\microsoft.windows.narratorquickstart_8wekyb3d8bbwe.bak
-move %winapps%\Microsoft.Windows.OOBENetworkCaptivePortal_cw5n1h2txyewy %winapps%\Microsoft.Windows.OOBENetworkCaptivePortal_cw5n1h2txyewy.bak
-move %winapps%\Microsoft.Windows.OOBENetworkConnectionFlow_cw5n1h2txyewy %winapps%\Microsoft.Windows.OOBENetworkConnectionFlow_cw5n1h2txyewy.bak
+::move %winapps%\Microsoft.Windows.OOBENetworkCaptivePortal_cw5n1h2txyewy %winapps%\Microsoft.Windows.OOBENetworkCaptivePortal_cw5n1h2txyewy.bak
+::move %winapps%\Microsoft.Windows.OOBENetworkConnectionFlow_cw5n1h2txyewy %winapps%\Microsoft.Windows.OOBENetworkConnectionFlow_cw5n1h2txyewy.bak
 move C:\Windows\SystemApps\Microsoft.Windows.PeopleExperienceHost_cw5n1h2txyewy C:\Windows\SystemApps\Microsoft.Windows.PeopleExperienceHost_cw5n1h2txyewy.bak
-move C:\Windows\SystemApps\Microsoft.Windows.PinningConfirmationDialog_cw5n1h2txyewy C:\Windows\SystemApps\Microsoft.Windows.PinningConfirmationDialog_cw5n1h2txyewy.bak
+taskkill /f /im StartMenuExperienceHost.exe
 move C:\Windows\SystemApps\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy C:\Windows\SystemApps\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy.bak
 move C:\Windows\SystemApps\Microsoft.Windows.XGpuEjectDialog_cw5n1h2txyewy C:\Windows\SystemApps\Microsoft.Windows.XGpuEjectDialog_cw5n1h2txyewy.bak
 move C:\Windows\SystemApps\Microsoft.XboxGameCallableUI_cw5n1h2txyewy C:\Windows\SystemApps\Microsoft.XboxGameCallableUI_cw5n1h2txyewy.bak
 ::move C:\Windows\SystemApps\MicrosoftWindows.Client.CBS_cw5n1h2txyewy C:\Windows\SystemApps\MicrosoftWindows.Client.CBS_cw5n1h2txyewy.bak
 move C:\Windows\SystemApps\ParentalControls_cw5n1h2txyewy C:\Windows\SystemApps\ParentalControls_cw5n1h2txyewy.bak
 move C:\Windows\SystemApps\Windows.CBSPreview_cw5n1h2txyewy C:\Windows\SystemApps\Windows.CBSPreview_cw5n1h2txyewy.bak
-)
 
-
+:next
 @rem *** Remove Telemetry & Data Collection ***
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" /v PreventDeviceMetadataFromNetwork /t REG_DWORD /d 1 /f
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f
@@ -481,7 +545,7 @@ reg add "HKEY_CLASSES_ROOT\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}\ShellFol
 reg add "HKEY_CLASSES_ROOT\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}\ShellFolder" /f /v Attributes /t REG_DWORD /d 0 >NUL 2>&1
 echo OneDrive has been removed. Windows Explorer needs to be restarted.
 ::backslash needed in the former part so the "if exist" knows the input is a directory
-if exist %userprofile%\Desktop\OneDriveBackupFiles\ do del /s /q %userprofile%\Desktop\OneDriveBackupFiles
+::if exist %userprofile%\Desktop\OneDriveBackupFiles\ do del /s /q %userprofile%\Desktop\OneDriveBackupFiles
 pause
 start /wait TASKKILL /F /IM explorer.exe
 start explorer.exe
