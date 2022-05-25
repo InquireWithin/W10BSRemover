@@ -31,6 +31,7 @@ services added for removal by default: TapiSrv, WdiServiceHost, WinDefend, WdNis
 added some additional optional services to delete (commented, uncomment them to include)
 Disabling Windows Defender
 optional (commented) directories to remove for services a user may not use (like teams, office, etc)
+added some firewall rules for certain systemapp non-removable binaries that should never be making outbound requests
 and more removal of modern computing horrors beyond my comprehension
 any bugs that could come w/ this patch can be resolved with sfc /scannow in an admin command prompt.
 
