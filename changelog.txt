@@ -15,6 +15,12 @@ add command line args for silent,verbose, logging, gutjob, autorun
 FIX command line argument problem
 ensure service can run and with system permissions (otherwise try to start the service as a powershell file)
 
+25/5/22 [v2.4.1 STABLE]
+- Removed pointless service creation (batch files can no longer be ran as services)
++ Hopefully fixed disabling of Windows Defender
++ Fixed curl request for the hosts file
++ extra points in the in-file documentation
++ Hopefully removed the Xbox Game Bar
 
 25/5/22 [2.4 mostlystable] The most stable version in a while
 "commented" indiana jones style swaps of systemapps
