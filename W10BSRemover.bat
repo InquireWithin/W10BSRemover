@@ -8,6 +8,8 @@
 ::DO NOT USE if you MUST have Microsoft Office products on your system (can be easily substituted w/ libreoffice)
 ::BACKUP your OneDrive files, this script will nuke it. 
 
+:: For more info on everything here, see the README (https://github.com/InquireWithin/W10BSRemover/blob/main/README.md)
+
 ::I HIGHLY RECOMMEND that if you run this script, you use Ethernet regularly, this minimizes variance.
 ::If this file was flagged a security risk, know that this is why: https://www.bleepingcomputer.com/news/microsoft/windows-10-hosts-file-blocking-telemetry-is-now-flagged-as-a-risk/
 
@@ -556,16 +558,6 @@ pause
 start /wait TASKKILL /F /IM explorer.exe
 start explorer.exe
 REM src end
-
-
-
-:: Implement my modified version of w10debloater here
-if not exist Windows10Debloater.ps1 (
-curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/Windows10Debloater.ps1 > Windows10Debloater.ps1
-)
-::unstable due to provisioned packages issue, see readme section 6.
-::Powershell.exe -Command "& {Start-Process Powershell.exe -ArgumentList '-ExecutionPolicy Bypass -File %~dp0Windows10Debloater.ps1' -Verb RunAs}"
-
 ipconfig /flushdns
 exit
 
