@@ -15,6 +15,26 @@ add command line args for silent,verbose, logging, gutjob, autorun
 FIX command line argument problem
 ensure service can run and with system permissions (otherwise try to start the service as a powershell file)
 
+
+25/5/22 [2.4 mostlystable] The most stable version in a while
+"commented" indiana jones style swaps of systemapps
+a lot more reg key patches
+extended route table filter
+extended ms telemetry list
+housecleaning
+hopefully a fix for the gamebar ms-overlay bug (if not i will implement the registry solution)
+removal of live kernel logs to free storage
+Local packages and local package cache are no longer removed by default
+partial debloating of edge (shouldnt be using edge anyway but I do it because you "have to" use it prior to getting an alternative)
+Eliminating OfficeClickToRun.exe and its related svc
+services added for removal by default: TapiSrv, WdiServiceHost, WinDefend, WdNisSvc, SecurityHealthService, ClickToRunSvc, OneSynSvc, DeviceAssociationService, DoSvc, wuausrv
+added some additional optional services to delete (commented, uncomment them to include)
+Disabling Windows Defender
+optional (commented) directories to remove for services a user may not use (like teams, office, etc)
+and more removal of modern computing horrors beyond my comprehension
+any bugs that could come w/ this patch can be resolved with sfc /scannow in an admin command prompt.
+
+"mostlystable" turned out to be flat out wrong. do NOT use 2.3.
 * 20/5/22 [2.3 mostlystable]
 "indiana jones" marble swaps on the systemapp provisioned packages w/ respective taskkills prior so processes cant launch again from there
 lots of more low hanging spyware removed
