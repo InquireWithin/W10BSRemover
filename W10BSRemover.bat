@@ -258,7 +258,7 @@ route ADD 104.44.22.198 MASK 255.255.255.0 0.0.0.0
 
 cd %~dp0
 REM More servers found to be ms telemetry posted on my github. I originally found these either by RevEng tools and scattered across the internet. I just formatted them and gave them the prefix "0.0.0.0 "
-if not exist ms_telemetry_list.txt (curl https://pastebin.com/raw/rtWSmmhf > ms_telemetry_list.txt)
+if not exist ms_telemetry_list.txt (curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/ms_telemetry_list.txt > ms_telemetry_list.txt)
 echo ms_telemetry_list.txt > %SystemRoot%\System32\drivers\etc\hosts
 
 ::DISABLING WINDOWS ANTIVIRUS PERMANENTLY (at least until you revert the regkey value to 0, or delete it)
