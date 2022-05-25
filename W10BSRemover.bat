@@ -1,13 +1,14 @@
 :: 14/4/22 LB orig date of creation
 
-:: The best reversal methods are as follows (cmd commands in admin mode, execute separately)
+:: Anything that "breaks" as a result of this script can be reversed with the following commands. Usually the former does the job.
 :: sfc /scannow
 :: DISM.exe /Online /Cleanup-image /Scanhealth
 :: DISM.exe /Online /Cleanup-image /Restorehealth
 
 ::DO NOT USE if you MUST have Microsoft Office products on your system (can be easily substituted w/ libreoffice)
+::BACKUP your OneDrive files, this script will nuke it. 
 
-::I HIGHLY RECOMMEND that if you run this script, you use Ethernet regularly, this minimizes variance (for reasons unknown to me still)
+::I HIGHLY RECOMMEND that if you run this script, you use Ethernet regularly, this minimizes variance.
 ::If this file was flagged a security risk, know that this is why: https://www.bleepingcomputer.com/news/microsoft/windows-10-hosts-file-blocking-telemetry-is-now-flagged-as-a-risk/
 
 ::NOTE: This script ASSUMES your registry key: HKEY_LOCAL_MACHINES\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\DataBasePath is set to %SystemRoot%\System32\drivers\etc
@@ -42,6 +43,8 @@
 ::Use Ethernet whenever possible
 ::If you still have a legacy BIOS motherboard, treasure it. UEFI sucks.
 ::DISCONNECT ethernet during startup to prevent some system reversions and auto-updates to os components
+::NEVER auto-connect any wifi network, it will be used against you during startup.
+::Use a public DNS server different than the one your ISP automatically assigns. Something like quad9 (global) [9.9.9.9] , UncensoredDNS (mainly eu) [91.239.100.100], or DNS.Watch (mainly eu) [84.200.69.80]
 @echo off
 
 ::SELF ELEVATION SEQUENCE (UAC PROMPT)
@@ -147,7 +150,7 @@ goto log
  ::check or query the reg key first before doing add, set can be used if already, serviceless option, less permissions
  ::reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" /v "WTenBSRemover" /t REG_SZ /d %~0 /f
  ::service option, more permissions
- sc create "W10BSRemover" start= delayed-auto displayname= "W10BSRemover" binpath= %~dpnx0
+ ::sc create "W10BSRemover" start= delayed-auto displayname= "W10BSRemover" binpath= %~dpnx0
  ::third option is creating a scheduled task
  goto log
 
@@ -202,8 +205,8 @@ sc delete wisvc
 sc delete WSearch
 ::I think this is another update svc
 sc delete wuauserv
-::win defender
-sc delete WinDefend
+::win defender removal. If you feel you need it at some point, comment.
+sc stop WinDefend && sc delete WinDefend
 sc delete WdNisSvc
 ::diags and telephony
 sc delete WdiServiceHost
@@ -253,12 +256,13 @@ route ADD 104.44.22.198 MASK 255.255.255.0 0.0.0.0
 
 cd %~dp0
 REM More servers found to be ms telemetry posted on my github. I originally found these either by RevEng tools and scattered across the internet. I just formatted them and gave them the prefix "0.0.0.0 "
-if not exist ms_telemetry_list.txt (curl https://github.com/InquireWithin/W10BSRemover/blob/main/ms_telemetry_list.txt > ms_telemetry_list.txt)
-type ms_telemetry_list.txt > %SystemRoot%\System32\drivers\etc\hosts
+if not exist ms_telemetry_list.txt (curl https://pastebin.com/raw/rtWSmmhf > ms_telemetry_list.txt)
+echo ms_telemetry_list.txt > %SystemRoot%\System32\drivers\etc\hosts
 
 ::DISABLING WINDOWS ANTIVIRUS PERMANENTLY (at least until you revert the regkey value to 0, or delete it)
 ::I consider this bloat and malware as the user has no ability even to turn it off, it will automatically turn itself back on. Even when it is off, it still performs random tasks and refuses certain tasks.
 ::The best anti-malware is common sense. Comment this line out if you still want Windows Defender on.
+::Update: Somewhere along the line of build 1903 this stopped being effective. leaving it here for users on older ISOs.
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender" /v DisableAntiSpyware /t REG_DWORD /d 1 /f
 
 ::no need for reversing as these 4 lines have no harm
@@ -337,12 +341,15 @@ del /s /q "C:\Users\%trueuser%\AppData\Local\OneDrive"
 del /s /q "C:\Users\%trueuser%\AppData\Local\GameAnalytics"
 
 ::delete live kernel log(s), freed up 1.51 GB for me
-if exist "C:\Windows\LiveKernelReports\" (
+if exist "C:\Windows\LiveKernelReports\*.dmp" (
 cd /d C:\Windows\LiveKernelReports
 del /s /q *.dmp
 rd /s /q %systemdrive%\$Recycle.bin
 cd %~dp0
 )
+
+
+
 ::firewall rules to hopefully prevent some specific applications from ever sending spyware data if other containment methods fail
 ::TIL the only reason "Control Panel" was replaced by "Settings" was to implement telemetry in it. Wonderful.
 ::protocol = any by default
@@ -370,10 +377,10 @@ powershell -Command "Get-AppxPackage -Name *Microsoft-WindowsPhone* | Remove-App
 :: fix to the ms-gamingoverlay issue (turning off gamebar)
 powershell -Command "get-appxpackage *Microsoft.XboxGamingOverlay* | remove-appxpackage"
 powershell -Command "get-appxpackage *Microsoft.XboxGameOverlay* | remove-appxpackage
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR" /v AppCaptureEnabled /t REG_DWORD /d 0 /f
+reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR" /v HistoricalCaptureEnabled /t REG_DWORD /d 0 /f
 
-
-
-REM orig src: https://www.hwinfo.com/misc/RemoveW10Bloat.htm most of the following lines came from here. I tweaked/edited some, and removed the deprecated lines.
+REM orig src: https://www.hwinfo.com/misc/RemoveW10Bloat.htm most of the following lines came from, or were inspired from here. I tweaked/edited some, and removed the deprecated lines.
 
 
 REM *** SCHEDULED TASKS tweaks ***
@@ -395,7 +402,6 @@ schtasks /Change /TN "Microsoft\Windows\PI\Sqm-Tasks" /Disable
 schtasks /Change /TN "Microsoft\Windows\Time Synchronization\ForceSynchronizeTime" /Disable
 schtasks /Change /TN "Microsoft\Windows\Time Synchronization\SynchronizeTime" /Disable
 schtasks /Change /TN "Microsoft\Windows\Windows Error Reporting\QueueReporting" /Disable
-schtasks /Change /TN "Microsoft\Windows\WindowsUpdate\Automatic App Update" /Disable
 
 
 
