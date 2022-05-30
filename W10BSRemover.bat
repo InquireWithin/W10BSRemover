@@ -13,15 +13,6 @@
 ::I HIGHLY RECOMMEND that if you run this script, you use Ethernet regularly, this minimizes variance.
 ::If this file was flagged a security risk, know that this is why: https://www.bleepingcomputer.com/news/microsoft/windows-10-hosts-file-blocking-telemetry-is-now-flagged-as-a-risk/
 
-::NOTE: This script ASSUMES your registry key: HKEY_LOCAL_MACHINES\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\DataBasePath is set to %SystemRoot%\System32\drivers\etc
-
-::There is also a proprietary software option for this (OOSU10) that ofc I can't include b/c proprietary.
-::Implement DWS (Destroy Windows 10 Spying) if possible. If not, use manually from here (https://github.com/spinda/Destroy-Windows-10-Spying) <- Forked version
-:: If I do, include the apache license alongside it (https://www.apache.org/licenses/LICENSE-2.0) as it is licensed under Apache.
-:: The original repo for DWS was deleted, and most forks are read only archives now. 
-:: Another fork (https://github.com/Wohlstand/Destroy-Windows-10-Spying)
-::A good script is also Windows 10 Decrapifier, first made for 17xx builds, author claims its still functioning for 20xx
-
 ::Another option instead of going through this confusing rigamarole is using Windows 10 Enterprise LTSB. Though I don't know if AutoKMS or W10DigitalActivator work on it.
 
 ::Recommendations that I wont/cant script here that will stengthen your control in the war against the operating system and/or its components.
@@ -259,7 +250,7 @@ route ADD 104.44.22.198 MASK 255.255.255.0 0.0.0.0
 cd %~dp0
 REM More servers found to be ms telemetry posted on my github. I originally found these either by RevEng tools and scattered across the internet. I just formatted them and gave them the prefix "0.0.0.0 "
 if not exist ms_telemetry_list.txt (curl https://raw.githubusercontent.com/InquireWithin/W10BSRemover/main/ms_telemetry_list.txt > ms_telemetry_list.txt)
-echo ms_telemetry_list.txt > %SystemRoot%\System32\drivers\etc\hosts
+type ms_telemetry_list.txt > %SystemRoot%\System32\drivers\etc\hosts
 
 ::DISABLING WINDOWS ANTIVIRUS PERMANENTLY (at least until you revert the regkey value to 0, or delete it)
 ::I consider this bloat and malware as the user has no ability even to turn it off, it will automatically turn itself back on. Even when it is off, it still performs random tasks and refuses certain tasks.
