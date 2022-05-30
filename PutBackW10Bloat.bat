@@ -1,3 +1,5 @@
+
+break > %systemroot%\System32\drivers\etc\hosts
 @rem *** Enable Services Back ***
 sc config DiagTrack start= auto
 sc config diagnosticshub.standardcollector.service start= auto
