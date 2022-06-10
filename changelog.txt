@@ -11,6 +11,7 @@ First created 13/4/22
 + Much better output
 + Lots of bug fixes
 + Fixed some syntactical inconsistency in logic for better readability
++ Added lighter hosts file (pihole's microsoft telemetry list) to the repo
 
 25/5/22 [v2.4.1.1-STABLE]
 - removed forked W10Debloater ps1 script from repo
