@@ -142,6 +142,7 @@ $services = @("SgrmBroker"
 "FontCache"
 "FontCache3.0.0.0" 
 "Remoteregistry"
+"DispBrokerDesktopSvc"
 )
 
 write-host "Configuring services..."
