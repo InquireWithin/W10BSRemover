@@ -114,7 +114,7 @@ echo "Service %%p changed to demand (manual)"
 ::if you dont use a microsoft account to sign in, uncomment the below line
 ::reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\wlidsvc" /v Start /t REG_DWORD /d 4 /f
 ::protected services to include later: DPS, WdiSystemHost, WdiServiceHost
-set quenchlist=DiagTrack TapiSrv dwappushservice DsSvc WbioSrvc diagnosticshub.standardcollector.service RemoteRegistry lfsvc diagsvc
+set quenchlist=DiagTrack TapiSrv dwappushservice DsSvc WbioSrvc diagnosticshub.standardcollector.service RemoteRegistry lfsvc diagsvc DispBrokerDesktopSvc
 for %%q in (%quenchlist%) do (
 sc stop %%q >NUL
 ::reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%%q" /v Start /t REG_DWORD /d 4 /f
