@@ -211,10 +211,10 @@ reg add HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\CloudStore\S
 ::risky ms edge key, protected by default
 reg add HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\MicrosoftEdge /v OSIntegrationLevel /t REG_DWORD /d 0 /f
 
-::I dont use Find My Device on windows but if you do (why), comment this next line out or delete it
+::remove or comment this line if you need FindMyDevice
 reg add HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\FindMyDevice /v AllowFindMyDevice /t REG_DWORD /d 0 /f
 
-::Remote fonts are not only bloat with a garbage premise, its also proprietary bloat just like this whole OS.
+::not needed
 reg add HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\System /v EnableFontProviders /t REG_DWORD /d 0 /f
 
 ::Windows Insider preview builds are not needed.
@@ -320,7 +320,7 @@ reg add "HKLM\SYSTEM\CurrentControlSet\Control\WMI\AutoLogger\SQMLogger" /v "Sta
 reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v Start_TrackProgs /t REG_DWORD /d 0 /f
 reg add HKCU\SOFTWARE\Microsoft\Siuf\Rules /v PeriodInNanoSeconds /t REG_DWORD /d 0 /f
 reg add HKCU\SOFTWARE\Microsoft\Siuf\Rules /v NumberOfSIUFInPeriod /t REG_DWORD /d 0 /f
-reg add HKCU\SOFTWARE\Policies\Microsoft\Windows\CloudContent /v DisableTailoredExperiencesWithDiagnosticData /t REG_DWORD /d 0 /f
+reg add HKCU\SOFTWARE\Policies\Microsoft\Windows\CloudContent /v DisableTailoredExperiencesWithDiagnosticData /t REG_DWORD /d 1 /f
 reg add HKCU\SOFTWARE\Policies\Microsoft\Windows\CloudContent /v DisableWindowsConsumerFeatures /t REG_DWORD /d 1 /f
 reg add HKCU\SOFTWARE\Microsoft\InputPersonalization /v RestrictImplicitInkCollection /t REG_DWORD /d 1 /f
 reg add HKCU\SOFTWARE\Microsoft\InputPersonalization /v RestrictImplicitTextCollection /t REG_DWORD /d 1 /f
@@ -515,10 +515,10 @@ echo "scheduled tasks configured successfully"
 :: The best way to do this is actually to do these manually in explorer or in their own script, which have a higher degree of consistency. There's also a couple of odd bugs associated w/ these
 ::for best results, run these in a separate batch file. Though be careful! These operations can cause some breakage!
 ::the purpose of this is to prevent the programs from even running, as removal is too cumbersome, and as a safety net for potential internal code to override firewall rules
-goto next
+
 
 ::another alternative is restricting SYSTEM from accessing these folders using icacls
-::these commands are highly dangerous, skipping by default
+::the following commented commands are dangerous
 set winapps = %windir%\SystemApps
 
 taskkill /f /im ShellExperienceHost.exe
@@ -561,7 +561,7 @@ move C:\Windows\SystemApps\MicrosoftWindows.Client.CBS_cw5n1h2txyewy C:\Windows\
 move C:\Windows\SystemApps\ParentalControls_cw5n1h2txyewy C:\Windows\SystemApps\ParentalControls_cw5n1h2txyewy.bak
 move C:\Windows\SystemApps\Windows.CBSPreview_cw5n1h2txyewy C:\Windows\SystemApps\Windows.CBSPreview_cw5n1h2txyewy.bak
 
-:next
+
 
 echo "Tweaking explorer configuration..."
 @rem NOW JUST SOME TWEAKS
