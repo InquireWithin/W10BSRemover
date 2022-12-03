@@ -103,7 +103,7 @@ type %SystemRoot%\System32\drivers\etc\hosts > %SystemRoot%\System32\drivers\etc
 ::Its likely better to add the reg keys themselves (setting Start to 4 (disabled) in the HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services rather than use sc)	
 ::Some of these services are protected on newer builds. Can hopefully mitigate this later by using the binPath option of sc, or better yet using icacls to deny system access
 ::protected: Trkwks, AppXSvc?
-set miscservices=APPXSVC SgrmBroker DusmSvc FontCache3.0.0.0 EventLog DoSvc FontCache InstallService Wsappx PushToInstall SysMain W32Time TimeBrokerSvc ClickToRunSvc OneSyncSvc UsoSvc tzautoupdate wscsvc svsvc wisvc WSearch wuauserv SecurityHealthService WMPNetworkSvc DeviceAssociationService RetailDemo SCardSvr EntAppSvc Browser BthAvctcpSvc SEMgrSvc PerfHost BcastDVRUserService CaptureService cbdhsvc CDPUserSvc TokenBroker vmicheartbeat
+set miscservices=APPXSVC SgrmBroker DusmSvc FontCache3.0.0.0 EventLog DoSvc FontCache InstallService Wsappx PushToInstall SysMain W32Time TimeBrokerSvc ClickToRunSvc OneSyncSvc UsoSvc tzautoupdate wscsvc svsvc wisvc WSearch wuauserv SecurityHealthService WMPNetworkSvc DeviceAssociationService RetailDemo SCardSvr EntAppSvc Browser BthAvctcpSvc SEMgrSvc PerfHost BcastDVRUserService CaptureService cbdhsvc CDPUserSvc TokenBroker vmicheartbeat DispBrokerDesktopSvc DusmSvc InstallService LxpSvcMapsBroker RasManRmSvc SgmBroker Wcmsvc
 for %%p in (%miscservices%) do ( 
 sc stop %%p >NUL
 reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%%p" /v Start /t REG_DWORD /d 3 /f
@@ -114,7 +114,7 @@ echo "Service %%p changed to demand (manual)"
 ::if you dont use a microsoft account to sign in, uncomment the below line
 ::reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\wlidsvc" /v Start /t REG_DWORD /d 4 /f
 ::protected services to include later: DPS, WdiSystemHost, WdiServiceHost
-set quenchlist=DiagTrack TapiSrv dwappushservice DsSvc WbioSrvc diagnosticshub.standardcollector.service RemoteRegistry lfsvc diagsvc DispBrokerDesktopSvc Themes FDResPub WdiServiceHost edgeupdate MicrosoftEdgeElevationService edgeupdatem
+set quenchlist=DiagTrack TapiSrv dwappushservice DsSvc WbioSrvc diagnosticshub.standardcollector.service RemoteRegistry lfsvc diagsvc DispBrokerDesktopSvc SecurityHealthService Themes FDResPub WdiServiceHost edgeupdate MicrosoftEdgeElevationService edgeupdatem
 for %%q in (%quenchlist%) do (
 sc stop %%q >NUL
 reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%%q" /v Start /t REG_DWORD /d 4 /f
