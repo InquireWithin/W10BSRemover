@@ -103,10 +103,10 @@ type %SystemRoot%\System32\drivers\etc\hosts > %SystemRoot%\System32\drivers\etc
 ::Its likely better to add the reg keys themselves (setting Start to 4 (disabled) in the HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services rather than use sc)	
 ::Some of these services are protected on newer builds. Can hopefully mitigate this later by using the binPath option of sc, or better yet using icacls to deny system access
 ::protected: Trkwks, AppXSvc?
-set miscservices=APPXSVC SgrmBroker DusmSvc FontCache3.0.0.0 EventLog DoSvc FontCache InstallService Wsappx PushToInstall SysMain W32Time TimeBrokerSvc ClickToRunSvc OneSyncSvc UsoSvc tzautoupdate wscsvc svsvc wisvc WSearch wuauserv SecurityHealthService WMPNetworkSvc DeviceAssociationService RetailDemo SCardSvr EntAppSvc Browser BthAvctcpSvc SEMgrSvc PerfHost BcastDVRUserService CaptureService cbdhsvc CDPUserSvc TokenBroker vmicheartbeat DispBrokerDesktopSvc DusmSvc InstallService LxpSvcMapsBroker RasManRmSvc SgmBroker Wcmsvc
+set miscservices=APPXSVC SgrmBroker DusmSvc FontCache3.0.0.0 EventLog DoSvc FontCache InstallService Wsappx PushToInstall SysMain ClickToRunSvc OneSyncSvc UsoSvc wscsvc svsvc wisvc WSearch wuauserv SecurityHealthService WMPNetworkSvc DeviceAssociationService RetailDemo SCardSvr EntAppSvc Browser BthAvctcpSvc SEMgrSvc PerfHost BcastDVRUserService CaptureService cbdhsvc CDPUserSvc TokenBroker vmicheartbeat DispBrokerDesktopSvc DusmSvc InstallService LxpSvcMapsBroker RasManRmSvc SgmBroker Wcmsvc
 for %%p in (%miscservices%) do ( 
 sc stop %%p >NUL
-reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%%p" /v Start /t REG_DWORD /d 3 /f
+::reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%%p" /v Start /t REG_DWORD /d 3 /f
 sc config %%p start= demand 
 echo "Service %%p changed to demand (manual)"
 )
@@ -117,12 +117,10 @@ echo "Service %%p changed to demand (manual)"
 set quenchlist=DiagTrack TapiSrv dwappushservice DsSvc WbioSrvc diagnosticshub.standardcollector.service RemoteRegistry lfsvc diagsvc DispBrokerDesktopSvc SecurityHealthService Themes FDResPub WdiServiceHost edgeupdate MicrosoftEdgeElevationService edgeupdatem
 for %%q in (%quenchlist%) do (
 sc stop %%q >NUL
-reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%%q" /v Start /t REG_DWORD /d 4 /f
+::reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%%q" /v Start /t REG_DWORD /d 4 /f
 sc config %%q start= disabled
 echo "Service %%q changed to disabled"
 )
-
-::break > %systemroot%\DiagTrack\analyticsevents.dat 
 
 ::TermService, UmRdpService, and SessionEnv is for remote desktop. DusmSvc is for metered networks (mostly), DPS is diagnostic policy service.
 ::sc delete TabletInputService && sc delete TermService && sc delete UmRdpService && sc delete DPS && sc delete DusmSvc
@@ -130,7 +128,8 @@ echo "Service %%q changed to disabled"
 ::sc delete BTAGService && && sc stop BthAvctpService && sc delete BthAvctpService && sc stop bthserv && sc delete bthserv
 ::if you DO NOT EVER need to print anything
 ::sc stop Spooler && sc delete Spooler
-
+::if you just hate windows time
+::sc config W32Time start= demand && sc config TimeBrokerSvc start= demand && sc config tzautoupdate start= demand
 
 cd %~dp0
 REM More servers found to be ms telemetry posted on my github. I originally found these either by RevEng tools and scattered across the internet. I just formatted them and gave them the prefix "0.0.0.0 "
@@ -175,11 +174,12 @@ echo "disabling auto-updates (pt1)"
 ::Also uncheck the "Automatically update certificates in the Microsoft Root Certificate Program (recommended)" box. Do these things alongside the reg add.
 reg add HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\SystemCertificates\AuthRoot /v DisableRootAutoUpdate /t REG_DWORD /d 1 /f
 
-::sometimes spyware applications will dump things here. clean it up so it wont be able to revisit the info.
-::del /s /q "%windir%\tracing\*"
-::this is meant to be a 'service' that will show the system health of your machine, but something like this DOES NOT need to start on login, you likely didnt even know it existed.
+del /s /q "%windir%\tracing\*"
+
+::Windows likes to fight this one. Protected on newer systems.
 reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\SecurityHealth" /f
-::Microsoft is so inconceivably greedy and lustful for data that they've implemented telemtetry in the clipboard. Modern computing horrors beyond by comprehension.
+
+::Modern computing horrors beyond my comprehension.
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Clipboard" /v IsClipboardSignalProducingFeatureAvailable /t REG_DWORD /d 0 /f
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Clipboard" /v IsCloudAndHistoryFeatureAvailable /t REG_DWORD /d 0 /f
 
@@ -217,8 +217,9 @@ reg add HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\FindMyDevice /v AllowFind
 ::Remote fonts are not only bloat with a garbage premise, its also proprietary bloat just like this whole OS.
 reg add HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\System /v EnableFontProviders /t REG_DWORD /d 0 /f
 
-::Windows Insider preview builds are not needed. One of the script's intents is to *prevent* updating the system and *prevent* MS from forcing new features and reversions of your changes.
+::Windows Insider preview builds are not needed.
 reg add HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds /v AllowBuildPreview /t REG_DWORD /d 0 /f
+
 echo "Configuring IE"
 ::They even tarnished internet explorer before tossing it by the wayside. Shame.
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Internet Explorer\Suggested Sites" /v Enabled /t REG_DWORD /d 0 /f
@@ -234,7 +235,7 @@ reg add HKLM\SYSTEM\CurrentControlSet\Control\TimeZoneInformation /v RealTimeIsU
 
 :: Content Delivery is tough to remove once you've already booted the iso live and made a user account, hopefully these keys should help negate its prevalence.
 :: Most effective if ran before a user account is created.
-echo "nuke the content delivery here"
+echo "nuking content delivery..."
 reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager /v ContentDeliveryAllowed /t REG_DWORD /d 0 /f
 reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager /v OemPreInstalledAppsEnabled /t REG_DWORD /d 0 /f
 reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager /v PreInstalledAppsEnabled /t REG_DWORD /d 0 /f
@@ -244,6 +245,8 @@ reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager /v
 reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager /v SubscribedContent-338388Enabled /t REG_DWORD /d 0 /f
 reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager /v SubscribedContent-338389Enabled /t REG_DWORD /d 0 /f 
 reg delete HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent /f 
+
+echo "doing some housecleaning..."
 
 ::remove auto update of offline maps
 reg add HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\Maps /v AutoDownloadAndUpdateMapData /t REG_DWORD /d 0 /f
@@ -258,7 +261,7 @@ reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\StorageHealth /v AllowDiskHealt
 ::Disable Teredo
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\TCPIP\v6Transition /v Teredo_State /t REG_SZ /d Disabled /f
 
-::disable network status indicator (it will ping remote servers and tell the servers if you have network connection and what your active topology looks like)
+::disable network status indicator (it will ping remote servers and tell the servers what your active topology looks like)
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\NetworkConnectivityStatusIndicator /v NoActiveProbe /t REG_DWORD /d 1 /f
 
 ::turn off location storage and collection
@@ -270,18 +273,22 @@ reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy /v LetAppsAccessLoca
 reg add HKCU\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy /v HasAccepted /t REG_DWORD /d 0 /f 
 reg add HKLM\SOFTWARE\Policies\Microsoft\Speech /v AllowSpeechModelUpdate /t REG_DWORD /d 0 /f
 
+echo "removing activity monitoring..."
 ::turn off logging of user activity (presumably non-idle uptime hours)
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\System /v EnableActivityFeed /t REG_DWORD /d 0 /f
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\System /v PublishUserActivities /t REG_DWORD /d 0 /f 
 reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\System /v UploadUserActivities /t REG_DWORD /d 0 /f
 
+echo "ensuring MS store is silenced..."
 ::nuke MS Store (again)
 reg add HKLM\SOFTWARE\Policies\Microsoft\WindowsStore /v DisableStoreApps /t REG_DWORD /d 1 /f
 reg add HKLM\SOFTWARE\Policies\Microsoft\WindowsStore /v AutoDownload /t REG_DWORD /d 2 /f
 
+echo "confirming termination of delivery opt..."
 ::nuke Delivery Optimization (again)
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DelveryOptimization\Config" /v DODownloadMode /t REG_DWORD /d 0 /f
 
+echo "removing windows update..."
 ::nuke automatic windows update (again)
 reg add HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate /v DoNotConnectToWindowsUpdateInternetLocations /t REG_DWORD /d 1 /f
 reg add HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate /v DisableWindowsUpdateAccess /t REG_DWORD /d 1 /f
@@ -290,12 +297,16 @@ reg add HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate /v WUStatusServer
 reg add HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate /v UpdateServiceUrlAlternate /t REG_SZ /d " " /f
 reg add HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\AU /v UseWUServer /t REG_DWORD /d 1 /f
 reg add HKLM\Software\Microsoft\Windows\CurrentVersion\WindowsStore\WindowsUpdate /v AutoDownload /t REG_DWORD /d 5 /f
+
+echo "removing system auto-configuration on network connection..."
 ::nuke telemetry auto-configuring itself
 reg add HKLM\Software\Policies\Microsoft\Windows\DataCollection /v DisableOneSettingsDownloads /t REG_DWORD /d 1 /f
 
+echo "removing widgets..."
 ::Remove Widgets
 reg add HKLM\Software\Policies\Microsoft\Windows\Widgets /v AllowWidgets /t REG_DWORD /d 0 /f
 
+echo "shutting off even more telemetry functions..."
 @rem *** Remove Misc Telemetry & Data Collection ***
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata" /v PreventDeviceMetadataFromNetwork /t REG_DWORD /d 1 /f
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f
@@ -335,6 +346,7 @@ reg add "HKLM\Software\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWi
 :: block OEM connections by the network manager
 reg add HKLM\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config /v AutoConnectAllowedOEM /t REG_DWORD /d 0 /f 
 
+echo "performing additional housecleaning and QoL..."
 @REM Change Windows Updates to "Notify to schedule restart"
 reg add "HKLM\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings" /v UxOption /t REG_DWORD /d 1 /f
 @REM Disable P2P Update downlods outside of local network
@@ -379,16 +391,14 @@ set provisionedregkeyspid=ActiproSoftwareLLC.562882FEEB491_2.6.18.18_neutral__24
 (for %%p in (%provisionedregkeyspid%) do (reg delete "HKCR\Extensions\ContractId\Windows.Protocol\PackageId\%%p" /f))
 
 
-::if you must use ms edge at some point (or already have used it frequently), you should comment the following lines, as I wont test whether this breaks edge or not.
+::edge stores some of the info it collects on you locally
 if exist "C:\Users\%trueuser%\AppData\Local\Microsoft\Edge\User Data\" (
 cd /d "C:\Users\%trueuser%\AppData\Local\Microsoft\Edge\User Data\"
 del /s /q *.*
 cd %~dp0
 )
 
-
-::src of the following lines: https://www.wintips.org/how-to-access-windowsapps-folder-windows-10-8/#part-2
-::Will not work if the files are encrypted, which is why I suggest removing the bitlocker encryption that comes default w/ Windows
+::Will not work if the target files are encrypted
 ::Seems to mostly be deprecated and patched out though as this folder is System level access. Keep here for older ISO's to use
 ::takeown /F "%ProgramFiles%\WindowsApps"
 ::takeown /F "%ProgramFiles%\WindowsApps" /r /d y
@@ -402,18 +412,15 @@ cd %~dp0
 ::only deletes locally, not system wide
 ::del /s /q "C:\Users\%trueuser%\AppData\Local\Packages\*"
 ::del /s /q "C:\Users\%trueuser%\AppData\Local\Package Cache\*"
-::del /s /q "C:\Users\%trueuser%\AppData\Local\OneDrive"
 del /s /q "C:\Users\%trueuser%\AppData\Local\GameAnalytics"
 
-::delete live kernel log(s), freed up 1.51 GB for me
+::delete live kernel log(s), doing this to free space
 if exist "C:\Windows\LiveKernelReports\*.dmp" (
 cd /d C:\Windows\LiveKernelReports
 del /s /q *.dmp
 rd /s /q %systemdrive%\$Recycle.bin
 cd %~dp0
 )
-
-
 
 ::firewall rules to hopefully prevent some specific applications from ever sending spyware data if other containment methods fail
 ::TIL the only reason "Control Panel" was replaced by "Settings" was to implement telemetry in it. Wonderful.
