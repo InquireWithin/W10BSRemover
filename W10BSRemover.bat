@@ -103,10 +103,10 @@ type %SystemRoot%\System32\drivers\etc\hosts > %SystemRoot%\System32\drivers\etc
 ::Its likely better to add the reg keys themselves (setting Start to 4 (disabled) in the HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services rather than use sc)	
 ::Some of these services are protected on newer builds. Can hopefully mitigate this later by using the binPath option of sc, or better yet using icacls to deny system access
 ::protected: Trkwks, AppXSvc?
-set miscservices=APPXSVC SgrmBroker DusmSvc FontCache3.0.0.0 EventLog DoSvc FontCache InstallService Wsappx PushToInstall SysMain W32Time TimeBrokerSvc ClickToRunSvc OneSyncSvc UsoSvc tzautoupdate wscsvc svsvc wisvc WSearch wuauserv SecurityHealthService WMPNetworkSvc DeviceAssociationService RetailDemo SCardSvr EntAppSvc Browser BthAvctcpSvc edgeupdate MicrosoftEdgeElevationService edgeupdatem SEMgrSvc PerfHost BcastDVRUserService CaptureService cbdhsvc CDPUserSvc vmicheartbeat
+set miscservices=APPXSVC SgrmBroker DusmSvc FontCache3.0.0.0 EventLog DoSvc FontCache InstallService Wsappx PushToInstall SysMain W32Time TimeBrokerSvc ClickToRunSvc OneSyncSvc UsoSvc tzautoupdate wscsvc svsvc wisvc WSearch wuauserv SecurityHealthService WMPNetworkSvc DeviceAssociationService RetailDemo SCardSvr EntAppSvc Browser BthAvctcpSvc SEMgrSvc PerfHost BcastDVRUserService CaptureService cbdhsvc CDPUserSvc TokenBroker vmicheartbeat
 for %%p in (%miscservices%) do ( 
 sc stop %%p >NUL
-::reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%%p" /v Start /t REG_DWORD /d 3 /f <- cant do w/o checking if key exists
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%%p" /v Start /t REG_DWORD /d 3 /f
 sc config %%p start= demand 
 echo "Service %%p changed to demand (manual)"
 )
@@ -114,10 +114,10 @@ echo "Service %%p changed to demand (manual)"
 ::if you dont use a microsoft account to sign in, uncomment the below line
 ::reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\wlidsvc" /v Start /t REG_DWORD /d 4 /f
 ::protected services to include later: DPS, WdiSystemHost, WdiServiceHost
-set quenchlist=DiagTrack TapiSrv dwappushservice DsSvc WbioSrvc diagnosticshub.standardcollector.service RemoteRegistry lfsvc diagsvc DispBrokerDesktopSvc
+set quenchlist=DiagTrack TapiSrv dwappushservice DsSvc WbioSrvc diagnosticshub.standardcollector.service RemoteRegistry lfsvc diagsvc DispBrokerDesktopSvc Themes FDResPub WdiServiceHost edgeupdate MicrosoftEdgeElevationService edgeupdatem
 for %%q in (%quenchlist%) do (
 sc stop %%q >NUL
-::reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%%q" /v Start /t REG_DWORD /d 4 /f
+reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%%q" /v Start /t REG_DWORD /d 4 /f
 sc config %%q start= disabled
 echo "Service %%q changed to disabled"
 )
@@ -182,8 +182,7 @@ reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run\Sec
 ::Microsoft is so inconceivably greedy and lustful for data that they've implemented telemtetry in the clipboard. Modern computing horrors beyond by comprehension.
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Clipboard" /v IsClipboardSignalProducingFeatureAvailable /t REG_DWORD /d 0 /f
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Clipboard" /v IsCloudAndHistoryFeatureAvailable /t REG_DWORD /d 0 /f
-::ApplicationFrameHost.exe is active whenever one or more Microsoft || Windows Store apps is running. If this instance is cancelled, it should also cause those unspecified apps to close.
-::taskkill /f /im ApplicationFrameHost.exe
+
 ::Spyware
 echo "Removing explorer-related junk"
 ::protected key
