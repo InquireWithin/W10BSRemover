@@ -1,6 +1,13 @@
 Changes prior to 30/4/22 are undocumented
 First created 13/4/22
 
+3/12/22 [v3.1]
++ more services to be set to be manual and disabled
++ re-added the system32 directory movement commands, some are still commented due to their dangerousness
++ more verbose output
+- time svcs are no longer set to manual by default
+- some manual services moved to be disabled
+
 10/6/22 [v3.0]
 + Added new ps1 script file I wrote in order to be customizable
 + Over 100 new reg keys
